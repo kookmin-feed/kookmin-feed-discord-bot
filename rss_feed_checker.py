@@ -54,7 +54,7 @@ async def check_updates(url, interval=60):
     while True:
         try:
             current_entries = feedparser.parse(url).entries
-            current_time = datetime.now(pytz.timezone('Asia/Seoul')).strftime('%Y-%m-%d')
+            current_time = datetime.now(pytz.timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M:%S')
             
             if current_entries and current_entries[0].link != last_link:
                 # 새로운 글이 있는 경우

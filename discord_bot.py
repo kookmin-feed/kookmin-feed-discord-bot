@@ -169,7 +169,7 @@ async def send_notice(notice):
                         url=notice.link,
                         color=discord.Color.blue()
                     )
-                    embed.add_field(name="작성일", value=notice.published.strftime('%Y-%m-%d %H:%M:%S'), inline=False)
+                    embed.add_field(name="작성일", value=notice.published.strftime('%Y-%m-%d'), inline=False)
                     try:
                         await channel.send(embed=embed)
                         print(f'서버 [{guild.name}]에 공지사항을 전송했습니다: {notice.title}')
