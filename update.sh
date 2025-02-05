@@ -1,6 +1,6 @@
 #!/bin/bash
-cd /home/ubuntu/sw-notice-bot
+cd /home/ubuntu/kookmin-feed
 source venv/bin/activate
 git pull
 pip install -r requirements.txt
-pm2 restart sw-notice-bot 
+pm2 restart kookmin-feed 
