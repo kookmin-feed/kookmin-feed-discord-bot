@@ -126,7 +126,7 @@ class SWNoticeChecker:
             logging.error(f"날짜 파싱 오류: {e}")
             return datetime.now(self.kst)
 
-async def start_monitoring(interval_minutes=720):  # 기본값 12시간 = 720분
+async def start_monitoring(interval_minutes=1):  # 기본값 12시간 = 720분
     """주기적으로 공지사항을 확인하고 디스코드로 전송합니다."""
     checker = SWNoticeChecker()
     interval_seconds = interval_minutes * 60
