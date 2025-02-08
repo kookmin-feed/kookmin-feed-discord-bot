@@ -3,6 +3,7 @@ import json
 import discord
 from discord import app_commands
 from dotenv import load_dotenv
+from crawler_manager import CrawlerConfig, CrawlerType
 
 # .env 파일에서 환경 변수 로드
 load_dotenv()
@@ -16,6 +17,7 @@ class NoticeBot(discord.Client):
         super().__init__(intents=intents)
         self.tree = app_commands.CommandTree(self)
         self.notice_channels = {}
+        self.crawler_config = CrawlerConfig()
         self.CHANNEL_CONFIG_FILE = 'channel_config.json'
         self.load_channel_config()
 
@@ -152,35 +154,82 @@ async def test_notice(interaction: discord.Interaction):
             ephemeral=True
         )
 
-async def send_notice(notice):
-    """모든 서버의 설정된 공지 채널에 공지사항을 전송합니다."""
+@client.tree.command(name="학사공지등록", description="현재 채널에 학사공지 알림을 등록합니다")
+@app_commands.checks.has_permissions(administrator=True)
+async def register_academic(interaction: discord.Interaction):
+    """현재 채널에 학사공지 알림을 등록합니다."""
+    channel_id = str(interaction.channel_id)
+    if client.crawler_config.add_crawler(channel_id, CrawlerType.ACADEMIC):
+        await interaction.response.send_message(
+            "이 채널에 학사공지 알림이 등록되었습니다.",
+            ephemeral=True
+        )
+    else:
+        await interaction.response.send_message(
+            "이 채널은 이미 학사공지 알림이 등록되어 있습니다.",
+            ephemeral=True
+        )
+
+@client.tree.command(name="sw공지등록", description="현재 채널에 SW중심대학 공지 알림을 등록합니다")
+@app_commands.checks.has_permissions(administrator=True)
+async def register_sw(interaction: discord.Interaction):
+    """현재 채널에 SW중심대학 공지 알림을 등록합니다."""
+    channel_id = str(interaction.channel_id)
+    if client.crawler_config.add_crawler(channel_id, CrawlerType.SW):
+        await interaction.response.send_message(
+            "이 채널에 SW중심대학 공지 알림이 등록되었습니다.",
+            ephemeral=True
+        )
+    else:
+        await interaction.response.send_message(
+            "이 채널은 이미 SW중심대학 공지 알림이 등록되어 있습니다.",
+            ephemeral=True
+        )
+
+@client.tree.command(name="알림목록", description="현재 채널에 등록된 알림 목록을 확인합니다")
+async def list_notifications(interaction: discord.Interaction):
+    """현재 채널에 등록된 알림 목록을 확인합니다."""
+    channel_id = str(interaction.channel_id)
+    crawlers = client.crawler_config.get_channel_crawlers(channel_id)
+    
+    if not crawlers:
+        await interaction.response.send_message(
+            "이 채널에 등록된 알림이 없습니다.",
+            ephemeral=True
+        )
+        return
+
+    crawler_names = {
+        "academic": "학사공지",
+        "sw": "SW중심대학 공지"
+    }
+    
+    message = "현재 등록된 알림 목록:\n"
+    for crawler in crawlers:
+        message += f"- {crawler_names.get(crawler, crawler)}\n"
+    
+    await interaction.response.send_message(message, ephemeral=True)
+
+async def send_notice(notice, crawler_type: CrawlerType):
+    """특정 크롤러의 공지사항을 해당하는 모든 채널에 전송합니다."""
     try:
-        # 서버 목록 새로 가져오기
-        await client.wait_until_ready()  # 봇이 완전히 준비될 때까지 대기
-        guilds = client.guilds
+        await client.wait_until_ready()
         
-        for guild in guilds:
-            channel_id = client.notice_channels.get(str(guild.id))
-            if channel_id:
-                channel = guild.get_channel(int(channel_id))  # guild.get_channel 사용
-                if channel:
-                    embed = discord.Embed(
-                        title=notice.title,
-                        url=notice.link,
-                        color=discord.Color.blue()
-                    )
-                    embed.add_field(name="작성일", value=notice.published.strftime('%Y-%m-%d'), inline=False)
-                    try:
-                        await channel.send(embed=embed)
-                        print(f'서버 [{guild.name}]에 공지사항을 전송했습니다: {notice.title}')
-                    except discord.errors.Forbidden:
-                        print(f'서버 [{guild.name}]의 채널에 메시지를 보낼 권한이 없습니다.')
-                    except Exception as e:
-                        print(f'서버 [{guild.name}] 메시지 전송 중 오류: {e}')
-                else:
-                    print(f'서버 [{guild.name}]의 설정된 채널을 찾을 수 없습니다.')
-            else:
-                print(f'서버 [{guild.name}]에 공지 채널이 설정되지 않았습니다.')
+        channels = client.crawler_config.get_channels_for_crawler(crawler_type)
+        for channel_id in channels:
+            channel = client.get_channel(int(channel_id))
+            if channel:
+                embed = discord.Embed(
+                    title=notice.title,
+                    url=notice.link,
+                    color=discord.Color.blue()
+                )
+                embed.add_field(name="작성일", value=notice.published.strftime('%Y-%m-%d'), inline=False)
+                try:
+                    await channel.send(embed=embed)
+                    print(f'채널 [{channel.name}]에 공지사항을 전송했습니다: {notice.title}')
+                except Exception as e:
+                    print(f'채널 [{channel.name}] 메시지 전송 중 오류: {e}')
     except Exception as e:
         print(f"디스코드 메시지 전송 중 오류 발생: {e}")
 
