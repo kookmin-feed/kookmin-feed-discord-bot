@@ -1,8 +1,8 @@
 import asyncio
 from discord_bot import client, send_notice
 from rss_feed_checker import check_updates as check_swacademic_updates
-
-from sw_notice_checker import check_updates as check_sw_updates
+from webcrawl.academic_notice_checker import check_updates as check_academic_updates
+from webcrawl.sw_notice_checker import check_updates as check_sw_updates
 import os
 from dotenv import load_dotenv
 from crawler_manager import CrawlerType
@@ -26,10 +26,11 @@ async def main():
     print("RSS 피드 모니터링을 시작합니다...") 
     SWACADEMIC_RSS_URL = os.getenv('SWACADEMIC_RSS_URL', 'https://cs.kookmin.ac.kr/news/notice/rss')
     SW_URL = os.getenv('SW_URL', 'https://software.kookmin.ac.kr/software/bulletin/notice.do')
-    
+    ACADEMIC_URL = os.getenv('ACADEMIC_URL', 'https://cs.kookmin.ac.kr/news/kookmin/academic/')
     # 각 크롤러 타입별로 모니터링 태스크 생성
     swacademic_task = asyncio.create_task(check_swacademic_updates(SWACADEMIC_RSS_URL, CrawlerType.SWACADEMIC))
     sw_task = asyncio.create_task(check_sw_updates(SW_URL, CrawlerType.SW))
+    academic_task = asyncio.create_task(check_academic_updates(ACADEMIC_URL, CrawlerType.ACADEMIC))
 
     print("디스코드 봇을 시작합니다...")
     try:
@@ -40,7 +41,7 @@ async def main():
         print(f"오류 발생: {e}")
     finally:
         await client.close()
-        await shutdown(swacademic_task, sw_task)
+        await shutdown(swacademic_task, sw_task,academic_task)
         await asyncio.get_event_loop().shutdown_asyncgens()
 
 

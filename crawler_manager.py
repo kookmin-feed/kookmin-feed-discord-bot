@@ -4,8 +4,9 @@ import json
 import os
 
 class CrawlerType(Enum):
-    SWACADEMIC = "swAcademic"  # 학사공지
-    SW = "sw"            # SW중심대학 공지
+    ACADEMIC = "academic"     # 학사공지
+    SWACADEMIC = "swAcademic"  # SW학사공지
+    SW = "sw"                # SW중심대학 공지
     # 추후 다른 크롤러 추가 가능
 
 class CrawlerConfig:

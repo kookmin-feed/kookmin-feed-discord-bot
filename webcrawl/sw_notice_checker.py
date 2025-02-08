@@ -8,7 +8,6 @@ import asyncio
 import time
 import json
 import os
-from discord_bot import client, send_notice
 from crawler_manager import CrawlerType
 
 class SWNoticeChecker:
@@ -17,7 +16,7 @@ class SWNoticeChecker:
         self.seen_entries = set()
         self.kst = pytz.timezone('Asia/Seoul')
         self.session = None
-        self.HISTORY_FILE = 'sw_notice_history.json'
+        self.HISTORY_FILE = 'webcrawl/sw_notice_history.json'
         self.load_history()
         
     def load_history(self):
@@ -112,8 +111,10 @@ class SWNoticeChecker:
 
 async def check_updates(url: str, crawler_type: CrawlerType = CrawlerType.SW):
     """SW중심대학 공지사항을 주기적으로 확인합니다."""
+    from discord_bot import send_notice
+    
     checker = SWNoticeChecker()
-    checker.url = url  # URL 설정 추가
+    checker.url = url
     
     print(f"SW중심대학 공지사항 모니터링을 시작합니다.")
     print("-" * 80)
@@ -131,7 +132,7 @@ async def check_updates(url: str, crawler_type: CrawlerType = CrawlerType.SW):
             except Exception as e:
                 logging.error(f"모니터링 중 오류 발생: {str(e)}")
             
-            await asyncio.sleep(300)  # 5분마다 확인
+            await asyncio.sleep(300)
     finally:
         checker.save_history()
 

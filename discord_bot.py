@@ -4,6 +4,7 @@ import discord
 from discord import app_commands
 from dotenv import load_dotenv
 from crawler_manager import CrawlerConfig, CrawlerType
+from webcrawl.sw_notice_checker import SWNoticeChecker  # 경로 수정
 
 # .env 파일에서 환경 변수 로드
 load_dotenv()
@@ -38,8 +39,9 @@ async def on_ready():
 
 @client.tree.command(name="testnotice", description="[디버그] 선택한 크롤러의 최근 공지사항을 테스트로 전송합니다")
 @app_commands.choices(crawler=[
+    app_commands.Choice(name="학사공지", value="academic"),
     app_commands.Choice(name="SW학사공지", value="swAcademic"),
-    app_commands.Choice(name="SW중심대학공지", value="sw"),
+    app_commands.Choice(name="SW중심대학공지", value="sw")
 ])
 async def test_notice(
     interaction: discord.Interaction, 
@@ -65,7 +67,21 @@ async def test_notice(
             ephemeral=True
         )
         
-        if crawler == "swAcademic":
+        if crawler == "academic":
+            from webcrawl.academic_notice_checker import AcademicNoticeChecker
+            
+            checker = AcademicNoticeChecker()
+            notices = await checker.check_new_notices()
+            
+            if not notices:
+                await interaction.followup.send(
+                    "새로운 학사공지가 없습니다.",
+                    ephemeral=True
+                )
+                return
+                
+            notice = notices[0]  # 최신 공지사항
+        elif crawler == "swAcademic":
             # RSS 피드에서 최신 글 가져오기
             from rss_feed_checker import parse_feed, format_entry
             from notice_entry import NoticeEntry  # NoticeEntry import 추가
@@ -124,6 +140,7 @@ async def test_notice(
 
 @client.tree.command(name="공지등록", description="현재 채널에 공지사항 알림을 등록합니다")
 @app_commands.choices(type=[
+    app_commands.Choice(name="학사공지", value="academic"),
     app_commands.Choice(name="SW학사공지", value="swAcademic"),
     app_commands.Choice(name="SW중심대학공지", value="sw")
 ])
@@ -154,12 +171,14 @@ async def register_notice(interaction: discord.Interaction, type: str):
 
     # 크롤러 타입 매핑
     crawler_type_map = {
+        "academic": CrawlerType.ACADEMIC,
         "swAcademic": CrawlerType.SWACADEMIC,
         "sw": CrawlerType.SW
     }
     
     # 공지 타입 한글명 매핑
     notice_type_names = {
+        "academic": "학사공지",
         "swAcademic": "SW학사공지",
         "sw": "SW중심대학공지"
     }
@@ -190,6 +209,7 @@ async def list_notifications(interaction: discord.Interaction):
         return
 
     crawler_names = {
+        "academic": "학사공지",
         "swAcademic": "SW학사공지",
         "sw": "SW중심대학공지"
     }
@@ -261,6 +281,7 @@ async def on_guild_join(guild):
 
 @client.tree.command(name="공지삭제", description="현재 채널에서 선택한 공지사항 알림을 삭제합니다")
 @app_commands.choices(type=[
+    app_commands.Choice(name="학사공지", value="academic"),
     app_commands.Choice(name="SW학사공지", value="swAcademic"),
     app_commands.Choice(name="SW중심대학공지", value="sw")
 ])
@@ -282,6 +303,7 @@ async def unregister_notice(interaction: discord.Interaction, type: str):
 
     # 크롤러 타입 매핑
     crawler_type_map = {
+        "academic": CrawlerType.ACADEMIC,
         "swAcademic": CrawlerType.SWACADEMIC,
         "sw": CrawlerType.SW
     }
@@ -289,6 +311,7 @@ async def unregister_notice(interaction: discord.Interaction, type: str):
 
     # 공지 타입 한글명 매핑
     notice_type_names = {
+        "academic": "학사공지",
         "swAcademic": "SW학사공지",
         "sw": "SW중심대학 공지"
     }
