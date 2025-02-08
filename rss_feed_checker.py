@@ -4,6 +4,7 @@ import asyncio
 from datetime import datetime
 import pytz
 from notice_entry import NoticeEntry
+from crawler_manager import CrawlerType
 from discord_bot import send_notice
 
 def parse_feed(url):
@@ -25,7 +26,19 @@ def format_entry(entry):
     try:
         # 한국 시간대로 변환
         kst = pytz.timezone('Asia/Seoul')
-        published = datetime.strptime(entry.published, '%a, %d %b %Y %H:%M:%S %z')
+        
+        # RSS 피드의 날짜 필드 찾기
+        date_field = None
+        for field in ['pubDate', 'published', 'updated']:
+            if hasattr(entry, field):
+                date_field = field
+                break
+                
+        if date_field is None:
+            raise ValueError("날짜 필드를 찾을 수 없습니다")
+            
+        # RSS 피드의 날짜 형식: 'Fri, 07 Feb 2025 16:07:41 +0900'
+        published = datetime.strptime(getattr(entry, date_field), '%a, %d %b %Y %H:%M:%S %z')
         published_kst = published.astimezone(kst)
         
         return {
@@ -35,59 +48,33 @@ def format_entry(entry):
         }
     except Exception as e:
         print(f"항목 형식 변환 중 오류 발생: {e}")
-        print("항목 데이터:", entry)
-        raise
+        print("엔트리 데이터:", entry)
+        # 오류 발생시 1970년 1월 1일 사용 (작성일 표시 안됨)
+        return {
+            'title': entry.title,
+            'published': datetime(1970, 1, 1, tzinfo=kst),
+            'link': entry.link
+        }
 
-async def check_updates(url, interval=60):
-    """주기적으로 RSS 피드를 확인하고 업데이트를 출력합니다."""
-    print(f"국민대학교 컴퓨터학부 공지사항 모니터링을 시작합니다.")
-    print(f"확인 주기: {interval}초")
-    print("-" * 80)
-
-    last_entries = feedparser.parse(url).entries
-    if not last_entries:
-        print("피드에서 항목을 찾을 수 없습니다.")
-        return
-
-    last_link = last_entries[0].link if last_entries else None
-
+async def check_updates(url: str, crawler_type: CrawlerType = CrawlerType.SWACADEMIC):
+    """RSS 피드를 주기적으로 확인하여 새로운 글이 있으면 디스코드로 전송합니다."""
+    from discord_bot import send_notice
+    
+    last_entry = None
     while True:
         try:
-            current_entries = feedparser.parse(url).entries
-            current_time = datetime.now(pytz.timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M:%S')
-            
-            if current_entries and current_entries[0].link != last_link:
-                # 새로운 글이 있는 경우
-                new_entries = []
-                for entry in current_entries:
-                    if entry.link == last_link:
-                        break
-                    new_entries.append(format_entry(entry))
-
-                if new_entries:
-                    print(f"\n{current_time} - 새로운 글이 있습니다:")
-                    for entry in new_entries:
-                        notice = NoticeEntry(entry)
-                        print(notice)
-                        await send_notice(notice)
-
-                last_link = current_entries[0].link
-            else:
-                print(f"\n{current_time} - 새로운 글이 없습니다.")
-
-            await asyncio.sleep(interval)
-
+            entries = parse_feed(url)
+            if entries:
+                entry_data = format_entry(entries[0])
+                notice = NoticeEntry(entry_data)
+                
+                # 새로운 공지사항인 경우에만 전송
+                if last_entry != notice:
+                    last_entry = notice
+                    await send_notice(notice, crawler_type)
+                    print(f"[{crawler_type.value}] 새로운 공지사항: {notice.title}")
+                    
         except Exception as e:
-            print(f"오류 발생: {e}")
-            print("계속 모니터링을 시도합니다...")
-            await asyncio.sleep(interval)
-
-async def start_monitoring():
-    """RSS 피드 모니터링과 디스코드 봇을 동시에 실행합니다."""
-    RSS_URL = os.getenv('RSS_FEED_URL', 'https://cs.kookmin.ac.kr/news/notice/rss')
-    
-    # RSS 피드 모니터링 시작
-    await check_updates(RSS_URL)
-
-if __name__ == "__main__":
-    asyncio.run(start_monitoring()) 
+            print(f"RSS 피드 확인 중 오류 발생: {e}")
+            
+        await asyncio.sleep(300)  # 5분마다 확인

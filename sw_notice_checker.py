@@ -9,10 +9,11 @@ import time
 import json
 import os
 from discord_bot import client, send_notice
+from crawler_manager import CrawlerType
 
 class SWNoticeChecker:
     def __init__(self):
-        self.url = "https://software.kookmin.ac.kr/software/bulletin/notice.do"
+        self.url = os.getenv('SW_URL', 'https://software.kookmin.ac.kr/software/bulletin/notice.do')
         self.seen_entries = set()
         self.kst = pytz.timezone('Asia/Seoul')
         self.session = None
@@ -59,7 +60,6 @@ class SWNoticeChecker:
     async def check_new_notices(self):
         """새로운 공지사항을 확인합니다."""
         try:
-            # 매 요청마다 새로운 세션 생성
             async with aiohttp.ClientSession() as session:
                 async with session.get(self.url) as response:
                     html = await response.text()
@@ -67,23 +67,20 @@ class SWNoticeChecker:
             soup = BeautifulSoup(html, 'html.parser')
             notices = []
             
-            print("\n=== 현재 크롤링된 모든 공지사항 ===")
-            # 테이블의 모든 행을 선택 (tr)
+            print("\n=== SW중심대학 공지사항 크롤링 결과 ===")
             for row in soup.select('table tbody tr'):
-                # 번호/구분/제목/첨부/작성자/작성일/조회수 열 선택
                 title_cell = row.select_one('.b-td-left')
                 if title_cell:
                     title_elem = title_cell.select_one('.b-title-box a')
-                    category = row.select_one('td:nth-child(2)').text.strip()
-                    author = row.select_one('td:nth-child(5)').text.strip()
                     date = row.select_one('td:nth-child(6)').text.strip()
                     
                     if title_elem:
                         title = title_elem.text.strip()
-                        # href 속성에서 파라미터 추출
                         href = title_elem.get('href', '')
                         article_no = href.split('articleNo=')[1].split('&')[0] if 'articleNo=' in href else ''
-                        link = f"https://software.kookmin.ac.kr/software/bulletin/notice.do?mode=view&articleNo={article_no}"
+                        # 환경변수에서 기본 URL 가져오기
+                        base_url = os.getenv('SW_URL', 'https://software.kookmin.ac.kr/software/bulletin/notice.do')
+                        link = f"{base_url}?mode=view&articleNo={article_no}"
                         
                         entry = {
                             'title': title,
@@ -93,29 +90,16 @@ class SWNoticeChecker:
                         
                         notice = NoticeEntry(entry)
                         print(f"\n[크롤링된 공지] {notice.title}")
-                        print(f"링크: {notice.link}")
                         
                         if notice not in self.seen_entries:
                             print("=> 새로운 공지사항입니다!")
                             notices.append(notice)
                             self.seen_entries.add(notice)
-                        else:
-                            print("=> 이미 확인한 공지사항입니다.")
-            
-            if not notices:
-                print("\n크롤링된 공지사항이 없습니다.")
-            
-            print("\n=== 현재 저장된 seen_entries 목록 ===")
-            for entry in self.seen_entries:
-                print(f"- {entry.title}")
-            print(f"총 {len(self.seen_entries)}개의 공지사항이 저장되어 있습니다.")
-            print("=" * 50)
             
             return notices
             
         except Exception as e:
             logging.error(f"공지사항 확인 중 오류 발생: {str(e)}")
-            print(f"상세 오류: {e}")
             return []
 
     def parse_date(self, date_str):
@@ -126,37 +110,29 @@ class SWNoticeChecker:
             logging.error(f"날짜 파싱 오류: {e}")
             return datetime.now(self.kst)
 
-async def start_monitoring(interval_minutes=1):  # 기본값 12시간 = 720분
-    """주기적으로 공지사항을 확인하고 디스코드로 전송합니다."""
+async def check_updates(url: str, crawler_type: CrawlerType = CrawlerType.SW):
+    """SW중심대학 공지사항을 주기적으로 확인합니다."""
     checker = SWNoticeChecker()
-    interval_seconds = interval_minutes * 60
+    checker.url = url  # URL 설정 추가
     
-    print(f"SW중심사업단 공지사항 모니터링을 시작합니다.")
-    print(f"확인 주기: {interval_minutes}분")
+    print(f"SW중심대학 공지사항 모니터링을 시작합니다.")
     print("-" * 80)
 
     try:
         while True:
             try:
                 new_notices = await checker.check_new_notices()
-                current_time = datetime.now(pytz.timezone('Asia/Seoul')).strftime('%Y-%m-%d')
                 
                 if new_notices:
-                    print(f"\n{current_time} - 새로운 공지사항이 있습니다:")
                     for notice in new_notices:
-                        print(notice)
-                        if client.is_ready():
-                            await send_notice(notice)  # await로 변경
-                else:
-                    print(f"\n{current_time} - 새로운 공지사항이 없습니다.")
+                        await send_notice(notice, crawler_type)
+                        print(f"[{crawler_type.value}] 새로운 공지사항: {notice.title}")
 
             except Exception as e:
                 logging.error(f"모니터링 중 오류 발생: {str(e)}")
             
-            print("\n다음 확인까지 대기중...")
-            await asyncio.sleep(interval_seconds)
+            await asyncio.sleep(300)  # 5분마다 확인
     finally:
-        # 프로그램 종료 시 기록 저장
         checker.save_history()
 
 if __name__ == "__main__":
@@ -164,5 +140,4 @@ if __name__ == "__main__":
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s'
     )
-    # 디버그를 위해 interval을 1분으로 설정
-    asyncio.run(start_monitoring(interval_minutes=1)) 
+    asyncio.run(check_updates()) 
