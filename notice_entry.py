@@ -7,16 +7,28 @@ class NoticeEntry:
         
         Args:
             entry (dict): 공지사항 정보를 담은 딕셔너리
+                - title: 제목
+                - link: 링크
+                - published: 작성일
+                - notice_type: 공지사항 종류 (academic, swAcademic, sw)
         """
         self.title = entry['title']
         self.published = entry['published']
         self.link = entry['link']
+        self.notice_type = entry.get('notice_type', 'unknown')  # 기본값 unknown
         self.separator = '-' * 80
     
     def __str__(self):
         """공지사항 항목을 문자열로 표현합니다."""
+        type_names = {
+            'academic': '학사공지',
+            'swAcademic': 'SW학사공지',
+            'sw': 'SW중심대학공지',
+            'unknown': '알 수 없음'
+        }
         return (
             f"\n제목: {self.title}\n"
+            f"구분: {type_names.get(self.notice_type, '알 수 없음')}\n"
             f"작성일: {self.published.strftime('%Y-%m-%d %H:%M:%S')}\n"
             f"링크: {self.link}\n"
             f"{self.separator}"

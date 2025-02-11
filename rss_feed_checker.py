@@ -4,22 +4,40 @@ import asyncio
 from datetime import datetime
 import pytz
 from notice_entry import NoticeEntry
-from crawler_manager import CrawlerType
-from discord_bot import send_notice
+from discord_bot.crawler_manager import CrawlerType
+from discord_bot.discord_bot import send_notice
 
-def parse_feed(url):
+def parse_date(date_str):
+    """날짜 문자열을 datetime 객체로 변환합니다."""
+    try:
+        dt = datetime.strptime(date_str, '%a, %d %b %Y %H:%M:%S %z')
+        return dt
+    except Exception as e:
+        print(f"날짜 파싱 오류: {e}")
+        return datetime.now(pytz.timezone('Asia/Seoul'))
+
+def parse_feed(url, crawler_type: CrawlerType):
     """RSS 피드를 파싱하여 최신 글 목록을 반환합니다."""
     feed = feedparser.parse(url)
-    # 최초 실행시에만 디버깅 정보 출력
-    if not hasattr(parse_feed, 'debug_shown') and feed.entries:
-        print("\n첫 번째 항목의 모든 필드 값:")
-        first_entry = feed.entries[0]
-        for key in first_entry.keys():
-            print(f"\n[{key}]")
-            print(f"{first_entry[key]}")
-            print("-" * 40)
-        parse_feed.debug_shown = True
-    return feed.entries
+    entries = []
+    
+    # 크롤러 타입에 따른 notice_type 매핑
+    notice_type_map = {
+        CrawlerType.ACADEMIC: 'academic',
+        CrawlerType.SWACADEMIC: 'swAcademic',
+        CrawlerType.SW: 'sw'
+    }
+    
+    for entry in feed.entries:
+        entry_data = {
+            'title': entry.title,
+            'link': entry.link,
+            'published': parse_date(entry.published),
+            'notice_type': notice_type_map.get(crawler_type, 'unknown')
+        }
+        entries.append(entry_data)
+    
+    return entries
 
 def format_entry(entry):
     """피드 엔트리를 보기 좋은 형식으로 변환합니다."""
@@ -58,15 +76,14 @@ def format_entry(entry):
 
 async def check_updates(url: str, crawler_type: CrawlerType = CrawlerType.SWACADEMIC):
     """RSS 피드를 주기적으로 확인하여 새로운 글이 있으면 디스코드로 전송합니다."""
-    from discord_bot import send_notice
+    from discord_bot.discord_bot import send_notice
     
     last_entry = None
     while True:
         try:
-            entries = parse_feed(url)
+            entries = parse_feed(url, crawler_type)
             if entries:
-                entry_data = format_entry(entries[0])
-                notice = NoticeEntry(entry_data)
+                notice = NoticeEntry(entries[0])
                 
                 # 새로운 공지사항인 경우에만 전송
                 if last_entry != notice:

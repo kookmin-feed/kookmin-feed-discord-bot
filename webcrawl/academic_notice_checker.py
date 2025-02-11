@@ -8,7 +8,8 @@ import asyncio
 import time
 import json
 import os
-from crawler_manager import CrawlerType
+from discord_bot.crawler_manager import CrawlerType
+from db_config import get_database
 
 class AcademicNoticeChecker:
     def __init__(self):
@@ -16,32 +17,34 @@ class AcademicNoticeChecker:
         self.seen_entries = set()
         self.kst = pytz.timezone('Asia/Seoul')
         self.session = None
-        self.HISTORY_FILE = 'webcrawl/academic_notice_history.json'
+        self.db = get_database()
+        self.history_collection = self.db['academic_notice_history']
         self.load_history()
         
     def load_history(self):
-        """저장된 크롤링 기록을 불러옵니다."""
+        """MongoDB에서 최근 크롤링 기록을 불러옵니다."""
         try:
-            if os.path.exists(self.HISTORY_FILE):
-                with open(self.HISTORY_FILE, 'r', encoding='utf-8') as f:
-                    history = json.load(f)
-                    # JSON에서 불러온 데이터로 NoticeEntry 객체 생성
-                    for entry in history:
-                        notice = NoticeEntry({
-                            'title': entry['title'],
-                            'link': entry['link'],
-                            'published': datetime.fromisoformat(entry['published']).replace(tzinfo=self.kst)
-                        })
-                        self.seen_entries.add(notice)
-                print(f"크롤링 기록 {len(self.seen_entries)}개를 불러왔습니다.")
+            history = self.history_collection.find().sort('published', -1).limit(30)
+            for entry in history:
+                notice = NoticeEntry({
+                    'title': entry['title'],
+                    'link': entry['link'],
+                    'published': datetime.fromisoformat(entry['published']).replace(tzinfo=self.kst),
+                    'notice_type': entry.get('notice_type', 'academic')  # 기존 데이터 호환성 유지
+                })
+                self.seen_entries.add(notice)
+            print(f"크롤링 기록 {len(self.seen_entries)}개를 불러왔습니다.")
         except Exception as e:
             print(f"크롤링 기록 로드 중 오류 발생: {e}")
             self.seen_entries = set()
 
     def save_history(self):
-        """크롤링 기록을 파일에 저장합니다."""
+        """크롤링 기록을 MongoDB에 저장합니다."""
         try:
-            # NoticeEntry 객체를 JSON 직렬화 가능한 형태로 변환
+            # 기존 데이터 삭제
+            self.history_collection.delete_many({})
+            
+            # 새로운 데이터 삽입
             history = []
             for notice in self.seen_entries:
                 history.append({
@@ -50,8 +53,8 @@ class AcademicNoticeChecker:
                     'published': notice.published.isoformat()
                 })
             
-            with open(self.HISTORY_FILE, 'w', encoding='utf-8') as f:
-                json.dump(history, f, ensure_ascii=False, indent=2)
+            if history:
+                self.history_collection.insert_many(history)
             print(f"크롤링 기록 {len(history)}개를 저장했습니다.")
         except Exception as e:
             print(f"크롤링 기록 저장 중 오류 발생: {e}")
@@ -86,7 +89,8 @@ class AcademicNoticeChecker:
                             entry = {
                                 'title': title,
                                 'link': link,
-                                'published': self.parse_date(date)
+                                'published': self.parse_date(date),
+                                'notice_type': 'academic'  # 학사 공지사항 타입 추가
                             }
                             
                             notice = NoticeEntry(entry)
@@ -95,7 +99,14 @@ class AcademicNoticeChecker:
                             if notice not in self.seen_entries:
                                 print("=> 새로운 공지사항입니다!")
                                 notices.append(notice)
+                                # 메모리에 추가
                                 self.seen_entries.add(notice)
+                                # DB에도 저장
+                                self.history_collection.insert_one({
+                                    'title': notice.title,
+                                    'link': notice.link,
+                                    'published': notice.published.isoformat()
+                                })
                         
                         except Exception as e:
                             print(f"공지사항 파싱 중 오류: {e}")
@@ -118,7 +129,8 @@ class AcademicNoticeChecker:
                             entry = {
                                 'title': title,
                                 'link': link,
-                                'published': self.parse_date(date)
+                                'published': self.parse_date(date),
+                                'notice_type': 'academic'  # 학사 공지사항 타입 추가
                             }
                             
                             notice = NoticeEntry(entry)
@@ -147,7 +159,7 @@ class AcademicNoticeChecker:
 
 async def check_updates(url: str, crawler_type: CrawlerType = CrawlerType.ACADEMIC):
     """학사공지를 주기적으로 확인합니다."""
-    from discord_bot import send_notice
+    from discord_bot.discord_bot import send_notice
     
     checker = AcademicNoticeChecker()
     checker.url = url
