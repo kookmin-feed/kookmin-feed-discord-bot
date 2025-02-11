@@ -135,9 +135,17 @@ class AcademicNoticeChecker:
                             
                             notice = NoticeEntry(entry)
                             if notice not in self.seen_entries:
+                                print("=> 새로운 공지사항입니다!")
                                 notices.append(notice)
+                                # 메모리에 추가
                                 self.seen_entries.add(notice)
-                                print(f"[새로운 공지사항-고정공지] {notice.title}")
+                                # DB에도 저장
+                                self.history_collection.insert_one({
+                                    'title': notice.title,
+                                    'link': notice.link,
+                                    'published': notice.published.isoformat(),
+                                    'notice_type': 'academic'  # 학사 공지사항 타입 추가
+                                })
                         
                         except Exception as e:
                             print(f"공지사항 파싱 중 오류: {e}")

@@ -103,7 +103,8 @@ class SWNoticeChecker:
                             self.history_collection.insert_one({
                                 'title': notice.title,
                                 'link': notice.link,
-                                'published': notice.published.isoformat()
+                                'published': notice.published.isoformat(),
+                                'notice_type': 'sw'  # SW 공지사항 타입 추가
                             })
             
             return notices
