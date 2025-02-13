@@ -64,7 +64,7 @@ async def check_updates(url, interval=60):
                     new_entries.append(format_entry(entry))
 
                 if new_entries:
-                    logging.info(f"[CS] 새로운 글이 있습니다:")
+                    logging.info(f"[CS] 새로운 공지사항이 있습니다:")
                     for entry in new_entries:
                         notice = NoticeEntry(entry)
                         logging.info(f"[CS] {str(notice)}")
@@ -72,7 +72,7 @@ async def check_updates(url, interval=60):
 
                 last_link = current_entries[0].link
             else:
-                logging.info(f"[CS] 새로운 글이 없습니다.")
+                logging.info(f"[CS] 새로운 공지사항이 없습니다.")
 
             await asyncio.sleep(interval)
 
