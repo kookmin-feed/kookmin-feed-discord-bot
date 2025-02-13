@@ -11,6 +11,15 @@ class CrawlerConfig:
         self.db = get_database()
         self.collection = self.db['crawler_config']
         
+    def get_channels_for_crawler(self, crawler_type: CrawlerType) -> list:
+        """특정 크롤러에 등록된 채널 목록을 반환합니다."""
+        # 모든 문서를 검색하여 해당 크롤러가 등록된 채널 ID를 찾음
+        channels = []
+        cursor = self.collection.find({'crawlers': crawler_type.value})
+        for doc in cursor:
+            channels.append(doc['_id'])
+        return channels
+
     def add_crawler(self, channel_id: str, crawler_type: CrawlerType) -> bool:
         """채널에 크롤러를 추가합니다."""
         result = self.collection.update_one(
@@ -18,8 +27,7 @@ class CrawlerConfig:
             {'$addToSet': {'crawlers': crawler_type.value}},
             upsert=True
         )
-        # upsert가 발생했거나, 배열이 수정되었으면 True 반환
-        return result.upserted_id is not None or result.modified_count > 0
+        return result.modified_count > 0 or result.upserted_id is not None
 
     def remove_crawler(self, channel_id: str, crawler_type: CrawlerType) -> bool:
         """채널에서 크롤러를 제거합니다."""
@@ -32,9 +40,4 @@ class CrawlerConfig:
     def get_channel_crawlers(self, channel_id: str) -> List[str]:
         """채널에 등록된 크롤러 목록을 반환합니다."""
         channel = self.collection.find_one({'_id': channel_id})
-        return channel.get('crawlers', []) if channel else []
-
-    def get_channels_for_crawler(self, crawler_type: CrawlerType) -> list:
-        """특정 크롤러에 등록된 채널 목록을 반환합니다."""
-        config = self.collection.find_one({'crawler_type': crawler_type.value})
-        return config['channels'] if config else [] 
+        return channel.get('crawlers', []) if channel else [] 
