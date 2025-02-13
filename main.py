@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import sys
 from discord_bot import client, send_notice
 from rss_feed_checker import check_updates
 from sw_notice_checker import start_monitoring
@@ -8,6 +9,42 @@ from dotenv import load_dotenv
 
 # .env 파일에서 환경 변수 로드
 load_dotenv()
+
+class MaxLevelFilter(logging.Filter):
+    """특정 레벨 미만의 로그만 통과시키는 필터"""
+    def __init__(self, max_level):
+        super().__init__()
+        self.max_level = max_level
+
+    def filter(self, record):
+        return record.levelno < self.max_level
+
+def setup_logging():
+    """로깅 설정"""
+    # 루트 로거 설정
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    
+    # 로그 포맷 설정
+    log_format = '%(asctime)s - %(levelname)s - %(message)s'
+    
+    # stdout 핸들러 (ERROR 미만의 로그)
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setLevel(logging.INFO)
+    stdout_handler.addFilter(MaxLevelFilter(logging.ERROR))
+    stdout_handler.setFormatter(logging.Formatter(log_format))
+    
+    # stderr 핸들러 (ERROR 이상의 로그)
+    stderr_handler = logging.StreamHandler(sys.stderr)
+    stderr_handler.setLevel(logging.WARNING)
+    stderr_handler.setFormatter(logging.Formatter(log_format))
+    
+    # 기존 핸들러 제거
+    logger.handlers.clear()
+    
+    # 새 핸들러 추가
+    logger.addHandler(stdout_handler)
+    logger.addHandler(stderr_handler)
 
 async def shutdown(cs_task, sw_task):
     """모든 태스크를 안전하게 종료합니다."""
@@ -41,7 +78,7 @@ async def main():
     try:
         await client.start(os.getenv('DISCORD_TOKEN'))
     except KeyboardInterrupt:
-        logging.info("\n프로그램을 종료합니다...")
+        logging.info("프로그램을 종료합니다...")
     except Exception as e:
         logging.error(f"오류 발생: {e}")
     finally:
@@ -53,10 +90,9 @@ async def main():
         await asyncio.get_event_loop().shutdown_asyncgens()
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s'
-    )
+    # 로깅 설정
+    setup_logging()
+    
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
