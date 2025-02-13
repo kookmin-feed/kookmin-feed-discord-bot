@@ -3,6 +3,7 @@ import discord
 from discord import app_commands
 from dotenv import load_dotenv
 from discord_bot.crawler_manager import CrawlerConfig
+from pymongo import MongoClient
 
 # .env 파일에서 환경 변수 로드
 load_dotenv()
@@ -91,7 +92,7 @@ async def send_notice(notice, crawler_type):
                     color=discord.Color.blue()
                 )
                 
-                # 공지사항 종류 표시 추가
+                # 공지사항 종류 표시
                 type_names = {
                     'academic': '학사공지',
                     'swAcademic': 'SW학사공지',

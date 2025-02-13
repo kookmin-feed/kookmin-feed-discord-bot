@@ -1,21 +1,19 @@
+import json
+import os
 from enum import Enum
 from typing import Dict, List, Optional
 from db_config import get_database
-
-class CrawlerType(Enum):
-    ACADEMIC = "academic"     # 학사공지
-    SWACADEMIC = "swAcademic"  # SW학사공지
-    SW = "sw"                # SW중심대학 공지
-    # 추후 다른 크롤러 추가 가능
+from discord_bot.crawler_type import CrawlerType
 
 class CrawlerConfig:
+    """크롤러 설정을 관리하는 클래스"""
     def __init__(self):
         self.db = get_database()
-        self.channels_collection = self.db['channels']
+        self.collection = self.db['crawler_config']
         
     def add_crawler(self, channel_id: str, crawler_type: CrawlerType) -> bool:
         """채널에 크롤러를 추가합니다."""
-        result = self.channels_collection.update_one(
+        result = self.collection.update_one(
             {'_id': channel_id},
             {'$addToSet': {'crawlers': crawler_type.value}},
             upsert=True
@@ -25,7 +23,7 @@ class CrawlerConfig:
 
     def remove_crawler(self, channel_id: str, crawler_type: CrawlerType) -> bool:
         """채널에서 크롤러를 제거합니다."""
-        result = self.channels_collection.update_one(
+        result = self.collection.update_one(
             {'_id': channel_id},
             {'$pull': {'crawlers': crawler_type.value}}
         )
@@ -33,13 +31,10 @@ class CrawlerConfig:
 
     def get_channel_crawlers(self, channel_id: str) -> List[str]:
         """채널에 등록된 크롤러 목록을 반환합니다."""
-        channel = self.channels_collection.find_one({'_id': channel_id})
+        channel = self.collection.find_one({'_id': channel_id})
         return channel.get('crawlers', []) if channel else []
 
-    def get_channels_for_crawler(self, crawler_type: CrawlerType) -> List[str]:
-        """특정 크롤러가 등록된 모든 채널을 반환합니다."""
-        channels = self.channels_collection.find(
-            {'crawlers': crawler_type.value},
-            {'_id': 1}
-        )
-        return [str(channel['_id']) for channel in channels] 
+    def get_channels_for_crawler(self, crawler_type: CrawlerType) -> list:
+        """특정 크롤러에 등록된 채널 목록을 반환합니다."""
+        config = self.collection.find_one({'crawler_type': crawler_type.value})
+        return config['channels'] if config else [] 
