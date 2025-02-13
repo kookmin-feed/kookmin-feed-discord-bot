@@ -5,18 +5,19 @@ from datetime import datetime
 import pytz
 from notice_entry import NoticeEntry
 from discord_bot import send_notice
+import logging
 
 def parse_feed(url):
     """RSS 피드를 파싱하여 최신 글 목록을 반환합니다."""
     feed = feedparser.parse(url)
     # 최초 실행시에만 디버깅 정보 출력
     if not hasattr(parse_feed, 'debug_shown') and feed.entries:
-        print("\n첫 번째 항목의 모든 필드 값:")
+        logging.debug("[CS] 첫 번째 항목의 모든 필드 값:")
         first_entry = feed.entries[0]
         for key in first_entry.keys():
-            print(f"\n[{key}]")
-            print(f"{first_entry[key]}")
-            print("-" * 40)
+            logging.debug(f"[CS] [{key}]")
+            logging.debug(f"[CS] {first_entry[key]}")
+            logging.debug("[CS] " + "-" * 40)
         parse_feed.debug_shown = True
     return feed.entries
 
@@ -34,19 +35,17 @@ def format_entry(entry):
             'link': entry.link
         }
     except Exception as e:
-        print(f"항목 형식 변환 중 오류 발생: {e}")
-        print("항목 데이터:", entry)
+        logging.error(f"[CS] 항목 형식 변환 중 오류 발생: {e}")
+        logging.error(f"[CS] 항목 데이터: {entry}")
         raise
 
 async def check_updates(url, interval=60):
     """주기적으로 RSS 피드를 확인하고 업데이트를 출력합니다."""
-    print(f"국민대학교 컴퓨터학부 공지사항 모니터링을 시작합니다.")
-    print(f"확인 주기: {interval}초")
-    print("-" * 80)
+    logging.info(f"[CS] 국민대학교 컴퓨터학부 공지사항 모니터링을 시작합니다. 확인 주기: {interval}초")
 
     last_entries = feedparser.parse(url).entries
     if not last_entries:
-        print("피드에서 항목을 찾을 수 없습니다.")
+        logging.warning("[CS] 피드에서 항목을 찾을 수 없습니다.")
         return
 
     last_link = last_entries[0].link if last_entries else None
@@ -65,21 +64,21 @@ async def check_updates(url, interval=60):
                     new_entries.append(format_entry(entry))
 
                 if new_entries:
-                    print(f"\n{current_time} - 새로운 글이 있습니다:")
+                    logging.info(f"[CS] 새로운 글이 있습니다:")
                     for entry in new_entries:
                         notice = NoticeEntry(entry)
-                        print(notice)
+                        logging.info(f"[CS] {str(notice)}")
                         await send_notice(notice)
 
                 last_link = current_entries[0].link
             else:
-                print(f"\n{current_time} - 새로운 글이 없습니다.")
+                logging.info(f"[CS] 새로운 글이 없습니다.")
 
             await asyncio.sleep(interval)
 
         except Exception as e:
-            print(f"오류 발생: {e}")
-            print("계속 모니터링을 시도합니다...")
+            logging.error(f"[CS] 오류 발생: {e}")
+            logging.info("[CS] 계속 모니터링을 시도합니다...")
             await asyncio.sleep(interval)
 
 async def start_monitoring():
@@ -90,4 +89,8 @@ async def start_monitoring():
     await check_updates(RSS_URL)
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s'
+    )
     asyncio.run(start_monitoring()) 

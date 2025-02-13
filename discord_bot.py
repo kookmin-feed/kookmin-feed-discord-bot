@@ -3,6 +3,7 @@ import json
 import discord
 from discord import app_commands
 from dotenv import load_dotenv
+import logging
 
 # .env 파일에서 환경 변수 로드
 load_dotenv()
@@ -187,12 +188,28 @@ async def send_notice(notice):
 @client.event
 async def on_guild_join(guild):
     """봇이 새로운 서버에 참여했을 때 실행됩니다."""
-    print(f'새로운 서버 [{guild.name}]에 참여했습니다.')
+    logging.info(f'새로운 서버 [{guild.name}]에 참여했습니다.')
     try:
         await client.tree.sync(guild=guild)
-        print(f'서버 [{guild.name}]에 슬래시 커맨드를 등록했습니다.')
+        logging.info(f'서버 [{guild.name}]에 슬래시 커맨드를 등록했습니다.')
+        
+        # 서버의 감사 로그에서 봇 초대 이벤트를 찾아 초대한 사람에게만 메시지 전송
+        async for entry in guild.audit_logs(action=discord.AuditLogAction.bot_add, limit=1):
+            if entry.target.id == client.user.id:  # 이 봇을 초대한 이벤트인지 확인
+                try:
+                    embed = discord.Embed(
+                        title="국민대학교 공지사항 알리미 봇",
+                        description="공지사항을 받을 채널을 설정하려면 `/setchannel` 명령어를 사용해주세요.",
+                        color=discord.Color.blue()
+                    )
+                    await entry.user.send(embed=embed)
+                    logging.info(f'서버 [{guild.name}]에서 봇을 초대한 {entry.user.name}에게 안내 메시지를 전송했습니다.')
+                except:
+                    logging.warning(f'서버 [{guild.name}]에서 봇을 초대한 {entry.user.name}에게 DM을 보낼 수 없습니다.')
+                break
+                    
     except Exception as e:
-        print(f'서버 [{guild.name}]에 슬래시 커맨드 등록 실패: {e}')
+        logging.error(f'서버 [{guild.name}]에 슬래시 커맨드 등록 실패: {e}')
 
 def run_bot():
     client.run(os.getenv('DISCORD_TOKEN')) 
