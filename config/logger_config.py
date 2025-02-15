@@ -1,5 +1,7 @@
 import logging
 import sys
+from dotenv import load_dotenv
+import os
 
 def setup_logger(name: str) -> logging.Logger:
     """로거를 설정하고 반환합니다."""
@@ -8,18 +10,28 @@ def setup_logger(name: str) -> logging.Logger:
     # 이미 핸들러가 설정되어 있다면 추가 설정하지 않음
     if logger.handlers:
         return logger
-        
-    # 로그 레벨 설정
-    logger.setLevel(logging.INFO)
     
     # 로그 포맷 설정
     log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     formatter = logging.Formatter(log_format)
     
-    # stdout 핸들러 (INFO 레벨)
+    # 환경 변수 로드
+    load_dotenv()
+    environment = os.getenv('ENVIRONMENT', 'development')  # 기본값은 development
+    
+
+    # stdout 핸들러 (환경에 따라 DEBUG 또는 INFO 레벨)
     stdout_handler = logging.StreamHandler(sys.stdout)
-    stdout_handler.setLevel(logging.INFO)
     stdout_handler.setFormatter(formatter)
+
+    # 환경에 따라 로그 레벨 설정
+    # 로거 레벨과 핸들러 레벨이 있기 때문에, 두개다 설정해야함.
+    if environment.lower() == 'production':
+        logger.setLevel(logging.INFO)
+        stdout_handler.setLevel(logging.INFO)
+    else:  # development
+        logger.setLevel(logging.DEBUG)
+        stdout_handler.setLevel(logging.DEBUG)
     
     # stderr 핸들러 (ERROR 레벨)
     stderr_handler = logging.StreamHandler(sys.stderr)
@@ -29,5 +41,8 @@ def setup_logger(name: str) -> logging.Logger:
     # 핸들러 추가
     logger.addHandler(stdout_handler)
     logger.addHandler(stderr_handler)
+    
+    # 로거가 상위 로거로 메시지를 전파하지 않도록 설정
+    logger.propagate = False
     
     return logger 

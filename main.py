@@ -64,6 +64,7 @@ async def before_check():
 
 async def main():
     logger.info("국민대학교 공지사항 알리미 봇을 시작합니다...")
+    #logger.debug("환경: " + os.getenv('ENVIRONMENT'))
     
     try:
         # 환경 변수 검증
