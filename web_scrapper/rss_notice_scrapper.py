@@ -67,8 +67,9 @@ class RSSNoticeScrapper(WebScrapper):
                 )
                 
                 self.logger.debug(f"[크롤링된 공지] {notice.title}")
-                # notice.published.date() == today and 
-                if ( notice.title not in recent_titles):
+                
+                if ( notice.published.date() == today and
+                    notice.title not in recent_titles):
                     self.logger.debug("=> 새로운 공지사항입니다!")
                     new_notices.append(notice)
                 else:
