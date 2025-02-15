@@ -1,19 +1,23 @@
+import logging
 from bs4 import BeautifulSoup
 from datetime import datetime
-from notice_entry import NoticeEntry
-from discord_bot.crawler_manager import CrawlerType
-from notice_type_map import NOTICE_TYPE_MAP
-from webcrawl.web_crawler import WebCrawler
+from template.notice_data import NoticeData
+from template.scrapper_type import ScrapperType
+from web_scrapper.web_scrapper import WebScrapper
+from config.logger_config import setup_logger
+from config.db_config import get_collection
 
-class AcademicNoticeCrawler(WebCrawler):
+logger = setup_logger(__name__)
+
+class AcademicNoticeScrapper(WebScrapper):
     def __init__(self, url: str):
-        super().__init__(url, CrawlerType.ACADEMIC)
+        super().__init__(url, ScrapperType.ACADEMIC)
     
     def get_list_elements(self, soup: BeautifulSoup) -> list:
         """학사공지 목록의 HTML 요소들을 가져옵니다."""
         return soup.select('.list-tbody .normal-bg, .list-tbody .notice-bg')
     
-    async def parse_notice_from_element(self, row) -> NoticeEntry:
+    async def parse_notice_from_element(self, row) -> NoticeData:
         """HTML 요소에서 학사공지 정보를 추출합니다."""
         try:
             title_tag = row.select_one('.subject a')
@@ -30,16 +34,12 @@ class AcademicNoticeCrawler(WebCrawler):
                 tzinfo=self.kst
             )
             
-            return NoticeEntry({
-                'title': title,
-                'link': link,
-                'published': published,
-                'notice_type': NOTICE_TYPE_MAP[self.crawler_type]
-            })
+            return NoticeData(
+                title=title,
+                link=link,
+                published=published,
+                scrapper_type=self.scrapper_type.value
+            )
         except Exception as e:
-            print(f"공지사항 파싱 중 오류: {e}")
-            return None
-
-async def check_updates(url: str, crawler_type: CrawlerType = CrawlerType.ACADEMIC):
-    crawler = AcademicNoticeCrawler(url)
-    return await crawler.check_updates() 
+            logger.error(f"공지사항 파싱 중 오류: {e}")
+            return None 
