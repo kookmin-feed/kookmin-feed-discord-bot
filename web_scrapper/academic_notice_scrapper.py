@@ -11,7 +11,7 @@ logger = setup_logger(__name__)
 
 class AcademicNoticeScrapper(WebScrapper):
     def __init__(self, url: str):
-        super().__init__(url, ScrapperType.ACADEMIC)
+        super().__init__(url, ScrapperType.CS_ACADEMIC_NOTICE)
     
     def get_list_elements(self, soup: BeautifulSoup) -> list:
         """학사공지 목록의 HTML 요소들을 가져옵니다."""

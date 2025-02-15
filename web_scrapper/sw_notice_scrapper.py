@@ -9,7 +9,7 @@ logger = setup_logger(__name__)
 
 class SWNoticeScrapper(WebScrapper):
     def __init__(self, url: str):
-        super().__init__(url, ScrapperType.SW)
+        super().__init__(url, ScrapperType.SOFTWARE_NOTICE)
     
     def get_list_elements(self, soup: BeautifulSoup) -> list:
         """SW중심대학 공지사항 목록의 HTML 요소들을 가져옵니다."""

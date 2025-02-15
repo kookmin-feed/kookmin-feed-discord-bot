@@ -12,7 +12,7 @@ from config.logger_config import setup_logger
 
 
 class RSSNoticeScrapper(WebScrapper):
-    def __init__(self, url: str, scrapper_type: ScrapperType = ScrapperType.SWACADEMIC):
+    def __init__(self, url: str, scrapper_type: ScrapperType = ScrapperType.SOFTWARE_NOTICE):
         """RSS 피드 스크래퍼를 초기화합니다.
         
         Args:
@@ -66,11 +66,11 @@ class RSSNoticeScrapper(WebScrapper):
                     scrapper_type=self.scrapper_type.value
                 )
                 
-                self.logger.info(f"[크롤링된 공지] {notice.title}")
+                self.logger.debug(f"[크롤링된 공지] {notice.title}")
                 
                 if (notice.published.date() == today and 
                     notice.title not in recent_titles):
-                    self.logger.info("=> 새로운 공지사항입니다!")
+                    self.logger.debug("=> 새로운 공지사항입니다!")
                     new_notices.append(notice)
                     collection.insert_one({
                         'title': notice.title,
@@ -80,10 +80,11 @@ class RSSNoticeScrapper(WebScrapper):
                     })
                 else:
                     if notice.published.date() != today:
-                        self.logger.info("=> 오늘 작성된 공지사항이 아닙니다")
+                        self.logger.debug("=> 오늘 작성된 공지사항이 아닙니다")
                     else:
-                        self.logger.info("=> 이미 등록된 공지사항입니다")
+                        self.logger.debug("=> 이미 등록된 공지사항입니다")
 
+            self.logger.info(f"총 {len(new_notices)}개의 새로운 공지사항")  
             return new_notices
                 
         except Exception as e:

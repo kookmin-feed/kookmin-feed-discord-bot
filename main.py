@@ -37,22 +37,22 @@ async def check_all_notices():
     """모든 스크래퍼를 실행하고 새로운 공지사항을 처리합니다."""
     try:
         # 학사공지 스크래퍼
-        academic_url = os.getenv('ACADEMIC_URL')
+        academic_url = os.getenv('CS_ACADEMIC_NOTICE_URL')
         academic_scrapper = AcademicNoticeScrapper(academic_url)
         academic_notices = await academic_scrapper.check_updates()
-        await process_new_notices(academic_notices, ScrapperType.ACADEMIC)
+        await process_new_notices(academic_notices, ScrapperType.CS_ACADEMIC_NOTICE)
 
         # SW중심대학 스크래퍼
-        sw_url = os.getenv('SW_URL')
+        sw_url = os.getenv('SOFTWARE_NOTICE_URL')
         sw_scrapper = SWNoticeScrapper(sw_url)
         sw_notices = await sw_scrapper.check_updates()
-        await process_new_notices(sw_notices, ScrapperType.SW)
+        await process_new_notices(sw_notices, ScrapperType.SOFTWARE_NOTICE)
         
         # RSS 피드 스크래퍼
-        rss_url = os.getenv('SWACADEMIC_RSS_URL')
-        rss_scrapper = RSSNoticeScrapper(rss_url, ScrapperType.SWACADEMIC)
+        rss_url = os.getenv('CS_SW_NOTICE_RSS_URL')
+        rss_scrapper = RSSNoticeScrapper(rss_url, ScrapperType.CS_SW_NOTICE_RSS)
         rss_notices = await rss_scrapper.check_updates()
-        await process_new_notices(rss_notices, ScrapperType.SWACADEMIC)
+        await process_new_notices(rss_notices, ScrapperType.CS_SW_NOTICE_RSS)
             
     except Exception as e:
         logger.error(f"스크래핑 중 오류 발생: {e}")

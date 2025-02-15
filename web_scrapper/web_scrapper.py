@@ -47,12 +47,12 @@ class WebScrapper(ABC):
             for element in elements:
                 notice = await self.parse_notice_from_element(element)
                 if notice:
-                    self.logger.info(f"[크롤링된 공지] {notice.title}")
+                    self.logger.debug(f"[크롤링된 공지] {notice.title}")
                     
                     # 오늘 작성된 공지사항이고, DB에 없는 새로운 공지사항인 경우
                     if (notice.published.date() == today and 
                         notice.title not in recent_titles):
-                        self.logger.info("=> 새로운 공지사항입니다!")
+                        self.logger.debug("=> 새로운 공지사항입니다!")
                         new_notices.append(notice)
                         # DB에 저장
                         collection.insert_one({
@@ -63,10 +63,11 @@ class WebScrapper(ABC):
                         })
                     else:
                         if notice.published.date() != today:
-                            self.logger.info("=> 오늘 작성된 공지사항이 아닙니다")
+                            self.logger.debug("=> 오늘 작성된 공지사항이 아닙니다")
                         else:
-                            self.logger.info("=> 이미 등록된 공지사항입니다")
+                            self.logger.debug("=> 이미 등록된 공지사항입니다")
             
+            self.logger.info(f"총 {len(new_notices)}개의 새로운 공지사항")
             return new_notices
             
         except Exception as e:
