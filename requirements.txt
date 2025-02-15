@@ -1,6 +1,8 @@
-discord.py>=2.0.0
-python-dotenv
+# Python >= 3.8, < 3.13
 aiohttp
 beautifulsoup4
+discord.py
+python-dotenv
+pymongo
 pytz
 feedparser

@@ -1,11 +1,16 @@
 import asyncio
 import logging
 import sys
-from discord_bot import client, send_notice
-from rss_feed_checker import check_updates
-from sw_notice_checker import start_monitoring
 import os
 from dotenv import load_dotenv
+from discord_bot.discord_bot import client, send_notice
+from template.scrapper_type import ScrapperType
+from web_scrapper.academic_notice_scrapper import AcademicNoticeScrapper
+from web_scrapper.sw_notice_scrapper import SWNoticeScrapper
+from web_scrapper.rss_notice_scrapper import RSSNoticeScrapper
+from discord.ext import tasks
+from config.logger_config import setup_logger
+from config.db_config import get_database, close_database, save_notice
 
 # .env 파일에서 환경 변수 로드
 load_dotenv()
@@ -19,81 +24,107 @@ class MaxLevelFilter(logging.Filter):
     def filter(self, record):
         return record.levelno < self.max_level
 
-def setup_logging():
-    """로깅 설정"""
-    # 루트 로거 설정
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-    
-    # 로그 포맷 설정
-    log_format = '%(asctime)s - %(levelname)s - %(message)s'
-    
-    # stdout 핸들러 (ERROR 미만의 로그)
-    stdout_handler = logging.StreamHandler(sys.stdout)
-    stdout_handler.setLevel(logging.INFO)
-    stdout_handler.addFilter(MaxLevelFilter(logging.ERROR))
-    stdout_handler.setFormatter(logging.Formatter(log_format))
-    
-    # stderr 핸들러 (ERROR 이상의 로그)
-    stderr_handler = logging.StreamHandler(sys.stderr)
-    stderr_handler.setLevel(logging.WARNING)
-    stderr_handler.setFormatter(logging.Formatter(log_format))
-    
-    # 기존 핸들러 제거
-    logger.handlers.clear()
-    
-    # 새 핸들러 추가
-    logger.addHandler(stdout_handler)
-    logger.addHandler(stderr_handler)
+async def process_new_notices(notices, scrapper_type: ScrapperType):
+    """새로운 공지사항을 처리합니다."""
+    for notice in notices:
+        # DB에 저장
+        await save_notice(notice, scrapper_type)
+        # 디스코드로 전송
+        await send_notice(notice, scrapper_type)
 
-async def shutdown(cs_task, sw_task):
-    """모든 태스크를 안전하게 종료합니다."""
-    # 실행 중인 모든 태스크 취소
-    cs_task.cancel()
-    sw_task.cancel()
-    
-    # 태스크들이 완전히 종료될 때까지 대기
+@tasks.loop(minutes=5)
+async def check_all_notices():
+    """모든 스크래퍼를 실행하고 새로운 공지사항을 처리합니다."""
     try:
-        await cs_task
-    except asyncio.CancelledError:
-        pass
-    try:
-        await sw_task
-    except asyncio.CancelledError:
-        pass
+        # 학사공지 스크래퍼
+        academic_url = os.getenv('CS_ACADEMIC_NOTICE_URL')
+        academic_scrapper = AcademicNoticeScrapper(academic_url)
+        academic_notices = await academic_scrapper.check_updates()
+        await process_new_notices(academic_notices, ScrapperType.CS_ACADEMIC_NOTICE)
+
+        # SW중심대학 스크래퍼
+        sw_url = os.getenv('SOFTWARE_NOTICE_URL')
+        sw_scrapper = SWNoticeScrapper(sw_url)
+        sw_notices = await sw_scrapper.check_updates()
+        await process_new_notices(sw_notices, ScrapperType.SOFTWARE_NOTICE)
+        
+        # RSS 피드 스크래퍼
+        rss_url = os.getenv('CS_SW_NOTICE_RSS_URL')
+        rss_scrapper = RSSNoticeScrapper(rss_url, ScrapperType.CS_SW_NOTICE_RSS)
+        rss_notices = await rss_scrapper.check_updates()
+        await process_new_notices(rss_notices, ScrapperType.CS_SW_NOTICE_RSS)
+            
+    except Exception as e:
+        logger.error(f"스크래핑 중 오류 발생: {e}")
+
+@check_all_notices.before_loop
+async def before_check():
+    """크롤링 시작 전 봇이 준비될 때까지 대기"""
+    await client.wait_until_ready()
 
 async def main():
-    logging.info("국민대학교 공지사항 알리미 봇을 시작합니다...")
+    logger.info("국민대학교 공지사항 알리미 봇을 시작합니다...")
+    #logger.debug("환경: " + os.getenv('ENVIRONMENT'))
     
-    # RSS 피드 체커 태스크 생성
-    logging.info("RSS 피드 모니터링을 시작합니다...")
-    CS_RSS_URL = os.getenv('CS_RSS_URL', 'https://cs.kookmin.ac.kr/news/notice/rss')
-    cs_monitor_task = asyncio.create_task(check_updates(CS_RSS_URL))
-    
-    # SW중심사업단 모니터링 태스크 생성
-    logging.info("SW중심사업단 모니터링을 시작합니다...")
-    sw_monitor_task = asyncio.create_task(start_monitoring())
-    
-    logging.info("디스코드 봇을 시작합니다...")
     try:
-        await client.start(os.getenv('DISCORD_TOKEN'))
+        # 환경 변수 검증
+        discord_token = os.getenv('DISCORD_TOKEN')
+        if not discord_token:
+            raise ValueError("DISCORD_TOKEN이 설정되지 않았습니다. .env 파일을 확인해주세요.")
+        
+        # MongoDB 연결 초기화
+        db = get_database()
+        logger.info("MongoDB 연결이 성공적으로 설정되었습니다.")
+        
+        # 크롤링 태스크 시작
+        check_all_notices.start()
+        logger.info("크롤링 작업이 시작되었습니다.")
+        
+        logger.info("디스코드 봇을 시작합니다...")
+        await client.start(discord_token)
+        
+    except ValueError as e:
+        logger.error(str(e))
+        sys.exit(1)
     except KeyboardInterrupt:
-        logging.info("프로그램을 종료합니다...")
+        logger.info("\n프로그램을 종료합니다...")
     except Exception as e:
-        logging.error(f"오류 발생: {e}")
+        logger.error(f"오류 발생: {e}")
     finally:
-        # 디스코드 봇 종료
+        check_all_notices.cancel()
         await client.close()
-        # 모든 태스크 안전하게 종료
-        await shutdown(cs_monitor_task, sw_monitor_task)
-        # 이벤트 루프 정리
+        close_database()
         await asyncio.get_event_loop().shutdown_asyncgens()
 
+@client.event
+async def on_ready():
+    """봇이 시작될 때 실행되는 이벤트"""
+    logger.info(f'봇이 시작되었습니다: {client.user.name}')
+    
+    try:
+        logger.info("슬래시 커맨드를 전역으로 등록합니다...")
+        await client.tree.sync()
+        logger.info("슬래시 커맨드 등록이 완료되었습니다.")
+    except Exception as e:
+        logger.error(f"슬래시 커맨드 등록 중 오류 발생: {e}")
+
+    logger.info("봇이 준비되었습니다!")
+
+@client.event
+async def on_guild_join(guild):
+    """봇이 새로운 서버에 참여했을 때 실행됩니다."""
+    logger.info(f'새로운 서버 [{guild.name}]에 참여했습니다.')
+    try:
+        await client.tree.sync(guild=guild)
+        logger.info(f'서버 [{guild.name}]에 슬래시 커맨드를 등록했습니다.')
+    except Exception as e:
+        logger.error(f'서버 [{guild.name}]에 슬래시 커맨드 등록 실패: {e}')
+
 if __name__ == "__main__":
-    # 로깅 설정
-    setup_logging()
+    
+    logger = setup_logger(__name__)
     
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        logging.info("프로그램이 안전하게 종료되었습니다.") 
+        logger.info("프로그램이 안전하게 종료되었습니다.") 
