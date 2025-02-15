@@ -38,7 +38,7 @@ class AcademicNoticeScrapper(WebScrapper):
                 title=title,
                 link=link,
                 published=published,
-                scrapper_type=self.scrapper_type.value
+                scrapper_type=self.scrapper_type
             )
         except Exception as e:
             logger.error(f"공지사항 파싱 중 오류: {e}")

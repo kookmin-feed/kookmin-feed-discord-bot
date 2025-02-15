@@ -63,21 +63,14 @@ class RSSNoticeScrapper(WebScrapper):
                     title=entry.title,
                     link=entry.link,
                     published=self.parse_date(entry.published),
-                    scrapper_type=self.scrapper_type.value
+                    scrapper_type=self.scrapper_type
                 )
                 
                 self.logger.debug(f"[크롤링된 공지] {notice.title}")
-                
-                if (notice.published.date() == today and 
-                    notice.title not in recent_titles):
+                # notice.published.date() == today and 
+                if ( notice.title not in recent_titles):
                     self.logger.debug("=> 새로운 공지사항입니다!")
                     new_notices.append(notice)
-                    collection.insert_one({
-                        'title': notice.title,
-                        'link': notice.link,
-                        'published': notice.published.isoformat(),
-                        'scrapper_type': notice.scrapper_type
-                    })
                 else:
                     if notice.published.date() != today:
                         self.logger.debug("=> 오늘 작성된 공지사항이 아닙니다")

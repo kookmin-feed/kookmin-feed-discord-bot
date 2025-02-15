@@ -26,7 +26,7 @@ class WebScrapper(ABC):
             collection = get_collection(self.scrapper_type.get_collection_name())
             recent_notices = list(collection.find(
                 sort=[('published', -1)]
-            ).limit(20))
+            ).limit(50))
             
             # 제목으로 비교하기 위한 set
             recent_titles = {notice['title'] for notice in recent_notices}
@@ -50,17 +50,10 @@ class WebScrapper(ABC):
                     self.logger.debug(f"[크롤링된 공지] {notice.title}")
                     
                     # 오늘 작성된 공지사항이고, DB에 없는 새로운 공지사항인 경우
-                    if (notice.published.date() == today and 
-                        notice.title not in recent_titles):
+                    #notice.published.date() == today and 
+                    if ( notice.title not in recent_titles):
                         self.logger.debug("=> 새로운 공지사항입니다!")
                         new_notices.append(notice)
-                        # DB에 저장
-                        collection.insert_one({
-                            'title': notice.title,
-                            'link': notice.link,
-                            'published': notice.published.isoformat(),
-                            'scrapper_type': notice.scrapper_type.value  # Enum의 value 저장
-                        })
                     else:
                         if notice.published.date() != today:
                             self.logger.debug("=> 오늘 작성된 공지사항이 아닙니다")

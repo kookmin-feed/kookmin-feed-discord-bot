@@ -36,7 +36,7 @@ async def save_notice(notice: NoticeData, scrapper_type: ScrapperType):
             'title': notice.title,
             'link': notice.link,
             'published': notice.published.isoformat(),
-            'scrapper_type': notice.scrapper_type
+            'scrapper_type': scrapper_type.value
         })
     except Exception as e:
         logger.error(f"DB 저장 중 오류 발생: {e}") 
