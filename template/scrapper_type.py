@@ -14,9 +14,9 @@ class ScrapperType(Enum):
     def get_korean_name(self) -> str:
         """스크래퍼 타입의 한글 이름을 반환합니다."""
         _KOREAN_NAMES = {
-            'academic': '학사공지',
-            'swAcademic': 'SW학사공지',
-            'sw': 'SW중심대학공지',
+            'cs_academic_notice': '학사공지',
+            'cs_sw_notice_rss': 'SW학사공지',
+            'software_notice': 'SW중심대학공지',
         }
         return _KOREAN_NAMES.get(self.value, '알 수 없음')
 
