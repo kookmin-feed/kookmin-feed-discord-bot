@@ -30,6 +30,7 @@ class ScrapperConfig:
             {'$addToSet': {'scrappers': scrapper_type.value}},
             upsert=True
         )
+        print(result.modified_count)
         return result.modified_count > 0 or result.upserted_id is not None
 
     def remove_scrapper(self, channel_id: str, scrapper_type: ScrapperType) -> bool:

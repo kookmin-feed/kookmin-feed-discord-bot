@@ -9,6 +9,7 @@ class ScrapperType(Enum):
     CS_ACADEMIC_NOTICE = 'cs_academic_notice' # 학사공지
     CS_SW_NOTICE_RSS = 'cs_sw_notice_rss' # SW학사공지
     SOFTWARE_NOTICE = 'software_notice' # SW중심대학
+    BIZ_ALL_NOTICE_RSS = "biz_all_notice_rss" # 경영대 학사공지
     # 서브도메인 + (학과) 게시판 종류 + {rss, bs4(x)}
 
     def get_korean_name(self) -> str:
@@ -17,6 +18,7 @@ class ScrapperType(Enum):
             'cs_academic_notice': '학사공지',
             'cs_sw_notice_rss': 'SW학사공지',
             'software_notice': 'SW중심대학공지',
+            'biz_all_notice_rss': '경영대학사공지',
         }
         return _KOREAN_NAMES.get(self.value, '알 수 없음')
 

@@ -53,6 +53,12 @@ async def check_all_notices():
         rss_scrapper = RSSNoticeScrapper(rss_url, ScrapperType.CS_SW_NOTICE_RSS)
         rss_notices = await rss_scrapper.check_updates()
         await process_new_notices(rss_notices, ScrapperType.CS_SW_NOTICE_RSS)
+
+        # 경영대 학사공지 RSS 피드 스크래퍼
+        rss_url = os.getenv('BIZ_ALL_NOTICE_RSS_URL')
+        rss_scrapper = RSSNoticeScrapper(rss_url, ScrapperType.BIZ_ALL_NOTICE_RSS)
+        rss_notices = await rss_scrapper.check_updates()
+        await process_new_notices(rss_notices, ScrapperType.BIZ_ALL_NOTICE_RSS)
             
     except Exception as e:
         logger.error(f"스크래핑 중 오류 발생: {e}")
