@@ -15,10 +15,10 @@ def get_database():
         logger.error(f"DB 연결 중 오류 발생: {e}")
         raise
 
-def get_collection(notice_type: str):
+def get_collection(scrapper_type: str):
     """공지사항 종류에 해당하는 컬렉션을 반환합니다."""
     db = get_database()
-    return db[notice_type]
+    return db[scrapper_type]
 
 def close_database():
     """데이터베이스 연결을 종료합니다."""
@@ -36,7 +36,7 @@ async def save_notice(notice: NoticeData, scrapper_type: ScrapperType):
             'title': notice.title,
             'link': notice.link,
             'published': notice.published.isoformat(),
-            'scrapper_type': scrapper_type.value
+            'scrapper_type': scrapper_type.get_collection_name()
         })
     except Exception as e:
         logger.error(f"DB 저장 중 오류 발생: {e}") 

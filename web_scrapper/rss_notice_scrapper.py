@@ -20,7 +20,7 @@ class RSSNoticeScrapper(WebScrapper):
             scraper_type (ScraperType, optional): 스크래퍼 타입. 기본값은 SWACADEMIC
         """
         super().__init__(url, scrapper_type)
-        self.logger = setup_logger(self.scrapper_type.value)
+        self.logger = setup_logger(self.scrapper_type.get_collection_name())
     
     def parse_date(self, date_str):
         """날짜 문자열을 datetime 객체로 변환합니다."""

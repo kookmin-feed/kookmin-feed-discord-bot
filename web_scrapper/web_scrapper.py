@@ -17,7 +17,7 @@ class WebScrapper(ABC):
         self.url = url
         self.scrapper_type = scrapper_type
         self.kst = pytz.timezone('Asia/Seoul')
-        self.logger = setup_logger(self.scrapper_type.value)
+        self.logger = setup_logger(self.scrapper_type.get_collection_name())
         
     async def check_updates(self) -> list:
         """웹페이지를 확인하여 새로운 공지사항이 있으면 반환합니다."""

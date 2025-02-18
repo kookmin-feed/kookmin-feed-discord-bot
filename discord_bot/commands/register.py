@@ -116,7 +116,7 @@ async def setup(bot):
 
             # 등록된 스크래퍼 목록 가져오기
             scrapper_type_list = interaction.client.scrapper_config.get_channel_scrappers(channel_id)
-            
+        
             if scrapper_type_list:
                 # 등록된 스크래퍼 목록을 한글명으로 변환
                 scrapper_names = [

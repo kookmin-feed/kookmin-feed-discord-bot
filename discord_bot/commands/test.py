@@ -3,9 +3,16 @@ import discord
 from template.scrapper_type import ScrapperType
 from template.notice_data import NoticeData
 from datetime import datetime
-from config.db_config import get_database
+from config.db_config import get_database, save_notice
 from discord.ext import commands
 from config.logger_config import setup_logger
+from web_scrapper.academic_notice_scrapper import AcademicNoticeScrapper
+from web_scrapper.sw_notice_scrapper import SWNoticeScrapper
+from web_scrapper.rss_notice_scrapper import RSSNoticeScrapper
+from web_scrapper.archi_all_notice_scrapper import ArchiNoticeScrapper
+import feedparser
+import aiohttp
+from bs4 import BeautifulSoup
 
 logger = setup_logger(__name__)
 
@@ -193,5 +200,86 @@ async def setup(bot):
             logger.error(f"목록 조회 중 오류 발생: {e}")
             await interaction.response.send_message(
                 "목록 조회 중 오류가 발생했습니다.", 
+                ephemeral=True
+            )
+
+    @bot.tree.command(name="test-scrape", description="[디버그] 선택한 스크래퍼로 데이터를 수집하고 DB에 저장합니다")
+    @app_commands.choices(scrapper=ScrapperType.get_choices())
+    async def test_scrape(interaction: discord.Interaction, scrapper: str):
+        """[디버그] 선택한 스크래퍼로 데이터를 수집하고 DB에 저장합니다."""
+        try:
+            await interaction.response.defer(ephemeral=True)
+            
+            scrapper_type = ScrapperType.from_str(scrapper)
+            if not scrapper_type:
+                await interaction.followup.send(
+                    "올바르지 않은 스크래퍼 타입입니다.",
+                    ephemeral=True
+                )
+                return
+
+            # 스크래퍼 타입에 따라 적절한 스크래퍼 생성
+            url = scrapper_type.get_url()
+            if scrapper_type in [ScrapperType.CS_SW_NOTICE_RSS, ScrapperType.BIZ_ALL_NOTICE_RSS]:
+                scrapper = RSSNoticeScrapper(url, scrapper_type)
+                # RSS 피드 직접 파싱
+                feed = feedparser.parse(url)
+                if not feed.entries:
+                    raise Exception("RSS 피드에서 항목을 찾을 수 없습니다")
+                    
+                entry = feed.entries[0]
+                notice = NoticeData(
+                    title=entry.title,
+                    link=entry.link,
+                    published=scrapper.parse_date(entry.published),
+                    scrapper_type=scrapper_type
+                )
+            else:
+                # HTML 스크래퍼 생성
+                if scrapper_type == ScrapperType.SOFTWARE_NOTICE:
+                    scrapper = SWNoticeScrapper(url)
+                elif scrapper_type == ScrapperType.CS_ACADEMIC_NOTICE:
+                    scrapper = AcademicNoticeScrapper(url)
+                elif scrapper_type == ScrapperType.ARCHI_ALL_NOTICE:
+                    scrapper = ArchiNoticeScrapper(url)
+                else:
+                    await interaction.followup.send(
+                        "지원하지 않는 스크래퍼 타입입니다.",
+                        ephemeral=True
+                    )
+                    return
+
+                # HTML 직접 파싱
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url) as response:
+                        html = await response.text()
+                
+                soup = BeautifulSoup(html, 'html.parser')
+                elements = scrapper.get_list_elements(soup)
+                if not elements:
+                    raise Exception("공지사항 목록을 찾을 수 없습니다")
+                
+                notice = await scrapper.parse_notice_from_element(elements[0])
+                if not notice:
+                    raise Exception("공지사항을 파싱할 수 없습니다")
+
+            # DB에 저장
+            await save_notice(notice, scrapper_type)
+
+            # 결과 메시지 전송
+            await interaction.followup.send(
+                f"✅ 데이터 수집 및 저장 완료!\n\n"
+                f"스크래퍼: {scrapper_type.get_korean_name()}\n"
+                f"저장된 공지사항:\n"
+                f"제목: {notice.title}\n"
+                f"작성일: {notice.published.strftime('%Y-%m-%d %H:%M:%S')}\n"
+                f"링크: {notice.link}",
+                ephemeral=True
+            )
+
+        except Exception as e:
+            logger.error(f"테스트 스크랩 중 오류 발생: {e}")
+            await interaction.followup.send(
+                f"오류가 발생했습니다: {str(e)}",
                 ephemeral=True
             ) 

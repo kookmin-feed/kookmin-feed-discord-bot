@@ -11,19 +11,10 @@ from web_scrapper.rss_notice_scrapper import RSSNoticeScrapper
 from discord.ext import tasks
 from config.logger_config import setup_logger
 from config.db_config import get_database, close_database, save_notice
-from web_scrapper.archi_notice_scrapper import ArchiNoticeScrapper
+from web_scrapper.archi_all_notice_scrapper import ArchiNoticeScrapper
 
 # .env 파일에서 환경 변수 로드
 load_dotenv()
-
-class MaxLevelFilter(logging.Filter):
-    """특정 레벨 미만의 로그만 통과시키는 필터"""
-    def __init__(self, max_level):
-        super().__init__()
-        self.max_level = max_level
-
-    def filter(self, record):
-        return record.levelno < self.max_level
 
 async def process_new_notices(notices, scrapper_type: ScrapperType):
     """새로운 공지사항을 처리합니다."""
@@ -37,38 +28,33 @@ async def process_new_notices(notices, scrapper_type: ScrapperType):
 async def check_all_notices():
     """모든 스크래퍼를 실행하고 새로운 공지사항을 처리합니다."""
     try:
-        # 학사공지 스크래퍼
-        academic_url = os.getenv('CS_ACADEMIC_NOTICE_URL')
-        academic_scrapper = AcademicNoticeScrapper(academic_url)
-        academic_notices = await academic_scrapper.check_updates()
-        await process_new_notices(academic_notices, ScrapperType.CS_ACADEMIC_NOTICE)
+        # 활성화된 모든 스크래퍼 실행
+        for scrapper_type in ScrapperType.get_active_scrappers():
+            try:
+                url = scrapper_type.get_url()
+                
+                # 스크래퍼 타입에 따라 적절한 스크래퍼 생성
+                if scrapper_type in [ScrapperType.CS_SW_NOTICE_RSS, ScrapperType.BIZ_ALL_NOTICE_RSS]:
+                    scrapper = RSSNoticeScrapper(url, scrapper_type)
+                elif scrapper_type == ScrapperType.SOFTWARE_NOTICE:
+                    scrapper = SWNoticeScrapper(url)
+                elif scrapper_type == ScrapperType.CS_ACADEMIC_NOTICE:
+                    scrapper = AcademicNoticeScrapper(url)
+                elif scrapper_type == ScrapperType.ARCHI_ALL_NOTICE:
+                    scrapper = ArchiNoticeScrapper(url)
+                else:
+                    continue
 
-        # SW중심대학 스크래퍼
-        sw_url = os.getenv('SOFTWARE_NOTICE_URL')
-        sw_scrapper = SWNoticeScrapper(sw_url)
-        sw_notices = await sw_scrapper.check_updates()
-        await process_new_notices(sw_notices, ScrapperType.SOFTWARE_NOTICE)
-        
-        # RSS 피드 스크래퍼
-        rss_url = os.getenv('CS_SW_NOTICE_RSS_URL')
-        rss_scrapper = RSSNoticeScrapper(rss_url, ScrapperType.CS_SW_NOTICE_RSS)
-        rss_notices = await rss_scrapper.check_updates()
-        await process_new_notices(rss_notices, ScrapperType.CS_SW_NOTICE_RSS)
-
-        # 경영대 학사공지 RSS 피드 스크래퍼
-        rss_url = os.getenv('BIZ_ALL_NOTICE_RSS_URL')
-        rss_scrapper = RSSNoticeScrapper(rss_url, ScrapperType.BIZ_ALL_NOTICE_RSS)
-        rss_notices = await rss_scrapper.check_updates()
-        await process_new_notices(rss_notices, ScrapperType.BIZ_ALL_NOTICE_RSS)
-
-        # 건축대학 공지사항 스크래퍼
-        archi_url = os.getenv('ARCHI_ALL_NOTICE_URL')
-        archi_scrapper = ArchiNoticeScrapper(archi_url)
-        archi_notices = await archi_scrapper.check_updates()
-        await process_new_notices(archi_notices, ScrapperType.ARCHI_ALL_NOTICE)
+                # 공지사항 확인 및 처리
+                notices = await scrapper.check_updates()
+                await process_new_notices(notices, scrapper_type)
+                
+            except Exception as e:
+                logger.error(f"{scrapper_type.get_korean_name()} 스크래핑 중 오류 발생: {e}")
+                continue
             
     except Exception as e:
-        logger.error(f"스크래핑 중 오류 발생: {e}")
+        logger.error(f"스크래핑 작업 중 오류 발생: {e}")
 
 @check_all_notices.before_loop
 async def before_check():
