@@ -35,7 +35,7 @@ class NoticeBot(discord.Client): # discord.Client 클래스를 상속받음
         
         # 각 명령어 모듈 등록
         await register.setup(self)
-        await test.setup(self)
+        # await test.setup(self)
 
 client = NoticeBot() #main.py에서 사용
 
