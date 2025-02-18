@@ -9,7 +9,8 @@ logger = setup_logger(__name__)
 async def setup(bot):
     """공지 등록/삭제 관련 명령어들을 봇에 등록합니다."""
     
-    @bot.tree.command(name="공지등록", description="공지사항 알림을 등록합니다")
+    @bot.tree.command(name="게시판_선택", description="알림을 받을 게시판을 선택합니다")
+    @app_commands.describe(scrapper="게시판 종류")
     @app_commands.choices(scrapper=ScrapperType.get_choices())
     async def register_notice(interaction: discord.Interaction, scrapper: str):
         """공지사항 알림을 등록합니다."""
@@ -17,7 +18,7 @@ async def setup(bot):
             scrapper_type = ScrapperType.from_str(scrapper)
             if not scrapper_type:
                 await interaction.response.send_message(
-                    "올바르지 않은 스크래퍼 타입입니다.",
+                    "올바르지 않은 게시판 입니다.",
                     ephemeral=True
                 )
                 return
@@ -54,7 +55,8 @@ async def setup(bot):
                 ephemeral=True
             )
 
-    @bot.tree.command(name="공지삭제", description="선택한 공지사항 알림을 삭제합니다")
+    @bot.tree.command(name="게시판_선택취소", description="선택한 게시판의 알림을 취소합니다")
+    @app_commands.describe(type="게시판 종류")
     @app_commands.choices(type=ScrapperType.get_choices())
     async def unregister_notice(interaction: discord.Interaction, type: str):
         """현재 채널에서 선택한 유형의 공지사항 알림을 삭제합니다."""
@@ -98,7 +100,7 @@ async def setup(bot):
                 ephemeral=True
             )
 
-    @bot.tree.command(name="등록된공지", description="현재 등록된 공지사항 알림 목록을 보여줍니다")
+    @bot.tree.command(name="선택된_게시판", description="현재 선택된 게시판 목록을 보여줍니다")
     async def list_crawlers(interaction: discord.Interaction):
         """현재 채널에 등록된 공지사항 알림 목록을 보여줍니다."""
         try:

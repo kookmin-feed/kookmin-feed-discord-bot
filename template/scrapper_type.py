@@ -10,15 +10,17 @@ class ScrapperType(Enum):
     CS_SW_NOTICE_RSS = 'cs_sw_notice_rss' # SW학사공지
     SOFTWARE_NOTICE = 'software_notice' # SW중심대학
     BIZ_ALL_NOTICE_RSS = "biz_all_notice_rss" # 경영대 학사공지
+    ARCHI_ALL_NOTICE = 'archi_all_notice' # 건축대학 공지사항
     # 서브도메인 + (학과) 게시판 종류 + {rss, bs4(x)}
 
     def get_korean_name(self) -> str:
         """스크래퍼 타입의 한글 이름을 반환합니다."""
         _KOREAN_NAMES = {
-            'cs_academic_notice': '학사공지',
-            'cs_sw_notice_rss': 'SW학사공지',
-            'software_notice': 'SW중심대학공지',
-            'biz_all_notice_rss': '경영대학사공지',
+            'cs_academic_notice': '대학 학사공지',
+            'cs_sw_notice_rss': '소융대 학사공지',
+            'software_notice': 'SW중심대학사업단 공지',
+            'biz_all_notice_rss': '경영대 학사공지',
+            'archi_all_notice': '건축대 전체공지',
         }
         return _KOREAN_NAMES.get(self.value, '알 수 없음')
 

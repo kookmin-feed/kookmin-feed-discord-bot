@@ -11,6 +11,7 @@ from web_scrapper.rss_notice_scrapper import RSSNoticeScrapper
 from discord.ext import tasks
 from config.logger_config import setup_logger
 from config.db_config import get_database, close_database, save_notice
+from web_scrapper.archi_notice_scrapper import ArchiNoticeScrapper
 
 # .env 파일에서 환경 변수 로드
 load_dotenv()
@@ -59,6 +60,12 @@ async def check_all_notices():
         rss_scrapper = RSSNoticeScrapper(rss_url, ScrapperType.BIZ_ALL_NOTICE_RSS)
         rss_notices = await rss_scrapper.check_updates()
         await process_new_notices(rss_notices, ScrapperType.BIZ_ALL_NOTICE_RSS)
+
+        # 건축대학 공지사항 스크래퍼
+        archi_url = os.getenv('ARCHI_ALL_NOTICE_URL')
+        archi_scrapper = ArchiNoticeScrapper(archi_url)
+        archi_notices = await archi_scrapper.check_updates()
+        await process_new_notices(archi_notices, ScrapperType.ARCHI_ALL_NOTICE)
             
     except Exception as e:
         logger.error(f"스크래핑 중 오류 발생: {e}")

@@ -81,7 +81,7 @@ async def setup(bot):
                 title=latest_scrapper['title'],
                 link=latest_scrapper['link'],
                 published=datetime.fromisoformat(latest_scrapper['published']),
-                notice_type=ScrapperType.from_str(latest_scrapper['notice_type'])
+                scrapper_type=scrapper_type
             )
 
             # 채널/유저 정보 수집 및 선택 옵션 생성
