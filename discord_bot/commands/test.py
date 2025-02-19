@@ -219,8 +219,8 @@ async def setup(bot):
                 )
                 return
 
-            # 스크래퍼 생성
-            scrapper = scrapper_type.create_scrapper()
+            # 스크래퍼 생성 - create_scrapper() 대신 ScrapperFactory 직접 사용
+            scrapper = ScrapperFactory().create_scrapper(scrapper_type)
             if not scrapper:
                 await interaction.followup.send(
                     "지원하지 않는 스크래퍼 타입입니다.",
