@@ -13,6 +13,7 @@ from web_scrapper.archi_all_notice_scrapper import ArchiNoticeScrapper
 import feedparser
 import aiohttp
 from bs4 import BeautifulSoup
+from web_scrapper.scrapper_factory import ScrapperFactory
 
 logger = setup_logger(__name__)
 
@@ -218,12 +219,23 @@ async def setup(bot):
                 )
                 return
 
-            # 스크래퍼 타입에 따라 적절한 스크래퍼 생성
-            url = scrapper_type.get_url()
-            if scrapper_type in [ScrapperType.CS_SW_NOTICE_RSS, ScrapperType.BIZ_ALL_NOTICE_RSS]:
-                scrapper = RSSNoticeScrapper(url, scrapper_type)
+            # 스크래퍼 생성
+            scrapper = scrapper_type.create_scrapper()
+            if not scrapper:
+                await interaction.followup.send(
+                    "지원하지 않는 스크래퍼 타입입니다.",
+                    ephemeral=True
+                )
+                return
+
+            # HTML 직접 파싱
+            async with aiohttp.ClientSession() as session:
+                async with session.get(scrapper.url) as response:
+                    html = await response.text()
+            
+            if isinstance(scrapper, RSSNoticeScrapper):
                 # RSS 피드 직접 파싱
-                feed = feedparser.parse(url)
+                feed = feedparser.parse(html)
                 if not feed.entries:
                     raise Exception("RSS 피드에서 항목을 찾을 수 없습니다")
                     
@@ -235,25 +247,7 @@ async def setup(bot):
                     scrapper_type=scrapper_type
                 )
             else:
-                # HTML 스크래퍼 생성
-                if scrapper_type == ScrapperType.SOFTWARE_NOTICE:
-                    scrapper = SWNoticeScrapper(url)
-                elif scrapper_type == ScrapperType.CS_ACADEMIC_NOTICE:
-                    scrapper = AcademicNoticeScrapper(url)
-                elif scrapper_type == ScrapperType.ARCHI_ALL_NOTICE:
-                    scrapper = ArchiNoticeScrapper(url)
-                else:
-                    await interaction.followup.send(
-                        "지원하지 않는 스크래퍼 타입입니다.",
-                        ephemeral=True
-                    )
-                    return
-
-                # HTML 직접 파싱
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(url) as response:
-                        html = await response.text()
-                
+                # HTML 파싱
                 soup = BeautifulSoup(html, 'html.parser')
                 elements = scrapper.get_list_elements(soup)
                 if not elements:

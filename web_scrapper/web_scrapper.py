@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 import logging
 import aiohttp
@@ -8,6 +10,7 @@ from template.notice_data import NoticeData
 from config.db_config import get_collection
 from config.logger_config import setup_logger
 from template.scrapper_type import ScrapperType
+from typing import List
 
 
 
@@ -19,7 +22,7 @@ class WebScrapper(ABC):
         self.kst = pytz.timezone('Asia/Seoul')
         self.logger = setup_logger(self.scrapper_type.get_collection_name())
         
-    async def check_updates(self) -> list:
+    async def check_updates(self) -> List[NoticeData]:
         """웹페이지를 확인하여 새로운 공지사항이 있으면 반환합니다."""
         try:
             # DB에서 해당 크롤러 타입의 최신 공지사항 가져오기

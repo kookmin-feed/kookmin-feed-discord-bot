@@ -5,13 +5,10 @@ import os
 from dotenv import load_dotenv
 from discord_bot.discord_bot import client, send_notice
 from template.scrapper_type import ScrapperType
-from web_scrapper.academic_notice_scrapper import AcademicNoticeScrapper
-from web_scrapper.sw_notice_scrapper import SWNoticeScrapper
-from web_scrapper.rss_notice_scrapper import RSSNoticeScrapper
 from discord.ext import tasks
 from config.logger_config import setup_logger
 from config.db_config import get_database, close_database, save_notice
-from web_scrapper.archi_all_notice_scrapper import ArchiNoticeScrapper
+from web_scrapper.scrapper_factory import ScrapperFactory
 
 # .env 파일에서 환경 변수 로드
 load_dotenv()
@@ -31,18 +28,10 @@ async def check_all_notices():
         # 활성화된 모든 스크래퍼 실행
         for scrapper_type in ScrapperType.get_active_scrappers():
             try:
-                url = scrapper_type.get_url()
-                
-                # 스크래퍼 타입에 따라 적절한 스크래퍼 생성
-                if scrapper_type in [ScrapperType.CS_SW_NOTICE_RSS, ScrapperType.BIZ_ALL_NOTICE_RSS]:
-                    scrapper = RSSNoticeScrapper(url, scrapper_type)
-                elif scrapper_type == ScrapperType.SOFTWARE_NOTICE:
-                    scrapper = SWNoticeScrapper(url)
-                elif scrapper_type == ScrapperType.CS_ACADEMIC_NOTICE:
-                    scrapper = AcademicNoticeScrapper(url)
-                elif scrapper_type == ScrapperType.ARCHI_ALL_NOTICE:
-                    scrapper = ArchiNoticeScrapper(url)
-                else:
+                # 스크래퍼 생성
+                scrapper = ScrapperFactory().create_scrapper(scrapper_type)
+                if not scrapper:
+                    logger.error(f"지원하지 않는 스크래퍼 타입: {scrapper_type.name}")
                     continue
 
                 # 공지사항 확인 및 처리

@@ -1,16 +1,14 @@
 from enum import Enum
-from dataclasses import dataclass
-from datetime import datetime
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Type
 from discord import app_commands
 
 class ScrapperType(Enum):
     """스크래퍼 종류를 정의하는 열거형 클래스"""
-    CS_ACADEMIC_NOTICE = ('cs_academic_notice','대학 학사공지', 'https://cs.kookmin.ac.kr/news/kookmin/academic/')
-    CS_SW_NOTICE_RSS = ('cs_sw_notice_rss','소융대 학사공지', 'https://cs.kookmin.ac.kr/news/notice/rss')
-    SOFTWARE_NOTICE = ('software_notice','SW중심대학사업단 공지', 'https://software.kookmin.ac.kr/software/bulletin/notice.do')
-    BIZ_ALL_NOTICE_RSS = ('biz_all_notice_rss','경영대 학사공지', 'https://biz.kookmin.ac.kr/news/notice/rss')
-    ARCHI_ALL_NOTICE = ('archi_all_notice','건축대 전체공지', 'https://archi.kookmin.ac.kr/life/notice/')
+    CS_ACADEMIC_NOTICE = ('cs_academic_notice','대학 학사공지', 'https://cs.kookmin.ac.kr/news/kookmin/academic/', 'AcademicNoticeScrapper')
+    CS_SW_NOTICE_RSS = ('cs_sw_notice_rss','소융대 학사공지', 'https://cs.kookmin.ac.kr/news/notice/rss', 'RSSNoticeScrapper')
+    SOFTWARE_NOTICE = ('software_notice','SW중심대학사업단 공지', 'https://software.kookmin.ac.kr/software/bulletin/notice.do', 'SWNoticeScrapper')
+    BIZ_ALL_NOTICE_RSS = ('biz_all_notice_rss','경영대 전체공지', 'https://biz.kookmin.ac.kr/news/notice/rss', 'RSSNoticeScrapper')
+    ARCHI_ALL_NOTICE = ('archi_all_notice','건축대 전체공지', 'https://archi.kookmin.ac.kr/life/notice/', 'ArchiNoticeScrapper')
     # 서브도메인 + (학과) 게시판 종류 + {rss, bs4(x)}
 
     def get_collection_name(self) -> str:
@@ -24,6 +22,10 @@ class ScrapperType(Enum):
     def get_url(self) -> str:
         """스크래퍼의 URL을 반환합니다."""
         return self.value[2]
+
+    def get_scrapper_class_name(self) -> str:
+        """스크래퍼 클래스 이름을 반환합니다."""
+        return self.value[3]
 
     @classmethod
     def from_str(cls, value: str) -> Optional['ScrapperType']:
