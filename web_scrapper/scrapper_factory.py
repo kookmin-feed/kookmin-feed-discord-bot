@@ -6,7 +6,7 @@ from web_scrapper.sw_notice_scrapper import SWNoticeScrapper
 from web_scrapper.rss_notice_scrapper import RSSNoticeScrapper
 from web_scrapper.archi_all_notice_scrapper import ArchiNoticeScrapper
 from web_scrapper.cms_academic_notice_scrapper import CMSAcademicNoticeScrapper
-
+from web_scrapper.me_academic_notice_scrapper import MEAcademicNoticeScrapper
 class ScrapperFactory:
     """스크래퍼 객체를 생성하는 팩토리 클래스"""
     
@@ -17,6 +17,7 @@ class ScrapperFactory:
         'RSSNoticeScrapper': RSSNoticeScrapper,
         'ArchiNoticeScrapper': ArchiNoticeScrapper,
         'CMSAcademicNoticeScrapper': CMSAcademicNoticeScrapper,
+        'MEAcademicNoticeScrapper': MEAcademicNoticeScrapper,
     }
     
     def __new__(cls):

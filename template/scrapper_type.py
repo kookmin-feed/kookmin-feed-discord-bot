@@ -10,8 +10,8 @@ class ScrapperType(Enum):
     BIZ_ALL_NOTICE_RSS = ('biz_all_notice_rss','경영대 전체공지', 'https://biz.kookmin.ac.kr/news/notice/rss', 'RSSNoticeScrapper')
     ARCHI_ALL_NOTICE = ('archi_all_notice','건축대 전체공지', 'https://archi.kookmin.ac.kr/life/notice/', 'ArchiNoticeScrapper')
     CMS_ACADEMIC_NOTICE = ('cms_academic_notice', '행정학과 학사공지', 'http://cms.kookmin.ac.kr/paap/notice/notice.do', 'CMSAcademicNoticeScrapper')
+    ME_ACADEMIC_NOTICE = ('me_academic_notice', '기계공학부 학사공지', 'http://cms.kookmin.ac.kr/mech/bbs/notice.do', 'MEAcademicNoticeScrapper')
     # 서브도메인 + (학과) 게시판 종류 + {rss, bs4(x)}
-
     def get_collection_name(self) -> str:
         """MongoDB 컬렉션 이름을 반환합니다."""
         return self.value[0]  # value는 tuple의 첫 번째 요소를 사용
