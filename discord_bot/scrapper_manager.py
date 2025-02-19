@@ -18,7 +18,7 @@ class ScrapperConfig:
         """특정 스크래퍼에 등록된 채널 목록을 반환합니다."""
         # 모든 문서를 검색하여 해당 스크래퍼가 등록된 채널 ID를 찾음
         channels = []
-        cursor = self.collection.find({'scrappers': scrapper_type.value})
+        cursor = self.collection.find({'scrappers': scrapper_type.get_collection_name()})
         for doc in cursor:
             channels.append(doc['_id'])
         return channels
@@ -27,7 +27,7 @@ class ScrapperConfig:
         """채널에 스크래퍼를 추가합니다."""
         result = self.collection.update_one(
             {'_id': channel_id},
-            {'$addToSet': {'scrappers': scrapper_type.value}},
+            {'$addToSet': {'scrappers': scrapper_type.get_collection_name()}},
             upsert=True
         )
         print(result.modified_count)
@@ -37,7 +37,7 @@ class ScrapperConfig:
         """채널에서 스크래퍼를 제거합니다."""
         result = self.collection.update_one(
             {'_id': channel_id},
-            {'$pull': {'scrappers': scrapper_type.value}}
+            {'$pull': {'scrappers': scrapper_type.get_collection_name()}}
         )
         return result.modified_count > 0
 
