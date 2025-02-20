@@ -19,9 +19,9 @@ jobs:
           port: ${{ secrets.REMOTE_SSH_PORT }}
           script: | # 실행될 스크립트 python3 -m venv venv 윈도우 환경이랑 우분투 환경에서 생성하는 디렉토리 구조가 달라서 추가
             sudo cd /home/ubuntu/kookmin-feed
-            sudo python3 -m venv venv
-            sudo source venv/bin/activate
             sudo git checkout develop
             sudo git pull
+            sudo python3 -m venv venv
+            sudo source venv/bin/activate
             sudo pip install -r requirements.txt
             sudo pm2 start main.py --name "kookmin-feed" --interpreter /home/ubuntu/kookmin-feed/venv/bin/python
