@@ -12,6 +12,7 @@ class ScrapperType(Enum):
     ARCHI_ALL_NOTICE = ('archi_all_notice','건축대 전체공지', 'https://archi.kookmin.ac.kr/life/notice/', 'ArchiNoticeScrapper')
     CMS_ACADEMIC_NOTICE = ('cms_academic_notice', '행정학과 학사공지', 'http://cms.kookmin.ac.kr/paap/notice/notice.do', 'CMSAcademicNoticeScrapper')
     ME_ACADEMIC_NOTICE = ('me_academic_notice', '기계공학부 학사공지', 'http://cms.kookmin.ac.kr/mech/bbs/notice.do', 'MEAcademicNoticeScrapper')
+    LINC_NOTICE = ('linc_notice', 'LINC 3.0 사업단 공지', 'https://linc.kookmin.ac.kr/main/menu?gc=605XOAS', 'LincNoticeScrapper')
     
     # 서브도메인 + (학과) 게시판 종류 + {rss, bs4(x)}
     def get_collection_name(self) -> str:
