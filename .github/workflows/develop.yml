@@ -20,6 +20,7 @@ jobs:
           script: | # 실행될 스크립트
             cd /home/ubuntu/kookmin-feed
             source venv/bin/activate
+            git checkout develop
             git pull
             pip install -r requirements.txt
-            pm2 restart kookmin-feed
+            pm2 start main.py --name "kookmin-feed" --interpreter /home/ubuntu/kookmin-feed/venv/bin/python
