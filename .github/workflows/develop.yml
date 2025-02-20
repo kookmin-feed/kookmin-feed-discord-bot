@@ -22,6 +22,6 @@ jobs:
             sudo git checkout develop
             sudo git pull
             sudo python3 -m venv venv
-            sudo source venv/bin/activate
-            sudo pip install -r requirements.txt
-            sudo pm2 start main.py --name "kookmin-feed" --interpreter /home/ubuntu/kookmin-feed/venv/bin/python
+            source venv/bin/activate
+            pip install -r requirements.txt
+            pm2 restart main.py --name "kookmin-feed" --interpreter /home/ubuntu/kookmin-feed/venv/bin/python
