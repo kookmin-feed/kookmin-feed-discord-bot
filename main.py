@@ -2,6 +2,8 @@ import asyncio
 import logging
 import sys
 import os
+from datetime import datetime
+import pytz
 from dotenv import load_dotenv
 from discord_bot.discord_bot import client, send_notice
 from template.scrapper_type import ScrapperType
@@ -9,6 +11,9 @@ from discord.ext import tasks
 from config.logger_config import setup_logger
 from config.db_config import get_database, close_database, save_notice
 from web_scrapper.scrapper_factory import ScrapperFactory
+from datetime import datetime
+import pytz
+
 
 # .env 파일에서 환경 변수 로드
 load_dotenv()
@@ -21,10 +26,30 @@ async def process_new_notices(notices, scrapper_type: ScrapperType):
         # 디스코드로 전송
         await send_notice(notice, scrapper_type)
 
+def is_working_hour():
+    """현재 시간이 작동 시간(월~토 8시~20시)인지 확인합니다."""
+    now = datetime.now(pytz.timezone('Asia/Seoul'))
+    
+    # 일요일(6) 체크
+    if now.weekday() == 6:
+        return False
+    
+    # 시간 체크 (8시~20시)
+    if now.hour < 8 or now.hour >= 20:
+        return False
+        
+    return True
+
 @tasks.loop(minutes=5)
 async def check_all_notices():
     """모든 스크래퍼를 실행하고 새로운 공지사항을 처리합니다."""
     try:
+        # 작동 시간이 아니면 스킵
+        if not is_working_hour():
+            current_time = datetime.now(pytz.timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M:%S')
+            logger.info(f"작동 시간이 아닙니다. (현재 시각: {current_time})")
+            return
+        
         # 활성화된 모든 스크래퍼 실행
         for scrapper_type in ScrapperType.get_active_scrappers():
             try:
@@ -55,6 +80,12 @@ async def main():
     #logger.debug("환경: " + os.getenv('ENVIRONMENT'))
     
     try:
+         # 작동 시간이 아니면 스킵
+        if not is_working_hour():
+            current_time = datetime.now(pytz.timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M:%S')
+            logger.info(f"작동 시간이 아닙니다. (현재 시각: {current_time})")
+            return
+
         # 환경 변수 검증
         discord_token = os.getenv('DISCORD_TOKEN')
         if not discord_token:
