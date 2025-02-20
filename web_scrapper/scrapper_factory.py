@@ -7,12 +7,15 @@ from web_scrapper.rss_notice_scrapper import RSSNoticeScrapper
 from web_scrapper.archi_all_notice_scrapper import ArchiNoticeScrapper
 from web_scrapper.cms_academic_notice_scrapper import CMSAcademicNoticeScrapper
 from web_scrapper.me_academic_notice_scrapper import MEAcademicNoticeScrapper
+from web_scrapper.cs_scholarship_notice_scrapper import CsScholarshipNoticeScrapper
+
 class ScrapperFactory:
     """스크래퍼 객체를 생성하는 팩토리 클래스"""
     
     _instance = None
     _scrapper_classes: Dict[str, Type[WebScrapper]] = {
         'AcademicNoticeScrapper': AcademicNoticeScrapper,
+        'CsScholarshipNoticeScrapper': CsScholarshipNoticeScrapper,
         'SWNoticeScrapper': SWNoticeScrapper,
         'RSSNoticeScrapper': RSSNoticeScrapper,
         'ArchiNoticeScrapper': ArchiNoticeScrapper,
