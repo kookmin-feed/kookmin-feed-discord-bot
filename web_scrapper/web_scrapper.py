@@ -54,15 +54,11 @@ class WebScrapper(ABC):
                     
                     # 오늘 작성된 공지사항이고, DB에 없는 새로운 공지사항인 경우
                     
-                    if ( notice.published.date() == today and 
-                        notice.title not in recent_titles):
+                    if ( notice.title not in recent_titles):
                         self.logger.debug("=> 새로운 공지사항입니다!")
                         new_notices.append(notice)
                     else:
-                        if notice.published.date() != today:
-                            self.logger.debug("=> 오늘 작성된 공지사항이 아닙니다")
-                        else:
-                            self.logger.debug("=> 이미 등록된 공지사항입니다")
+                        self.logger.debug("=> 이미 등록된 공지사항입니다")
             
             self.logger.info(f"총 {len(new_notices)}개의 새로운 공지사항")
             return new_notices
