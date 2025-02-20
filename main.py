@@ -2,6 +2,8 @@ import asyncio
 import logging
 import sys
 import os
+from datetime import datetime
+import pytz
 from dotenv import load_dotenv
 from discord_bot.discord_bot import client, send_notice
 from template.scrapper_type import ScrapperType
@@ -50,11 +52,32 @@ async def before_check():
     """크롤링 시작 전 봇이 준비될 때까지 대기"""
     await client.wait_until_ready()
 
+def is_working_hour():
+    """현재 시간이 작동 시간(월~토 8시~20시)인지 확인합니다."""
+    now = datetime.now(pytz.timezone('Asia/Seoul'))
+    
+    # 일요일(6) 체크
+    if now.weekday() == 6:
+        return False
+    
+    # 시간 체크 (8시~20시)
+    if now.hour < 8 or now.hour >= 20:
+        return False
+        
+    return True
+
+
 async def main():
     logger.info("국민대학교 공지사항 알리미 봇을 시작합니다...")
     #logger.debug("환경: " + os.getenv('ENVIRONMENT'))
     
     try:
+         # 작동 시간이 아니면 스킵
+        if not is_working_hour():
+            current_time = datetime.now(pytz.timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M:%S')
+            logger.info(f"작동 시간이 아닙니다. (현재 시각: {current_time})")
+            return
+
         # 환경 변수 검증
         discord_token = os.getenv('DISCORD_TOKEN')
         if not discord_token:
