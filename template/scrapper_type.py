@@ -13,6 +13,7 @@ class ScrapperType(Enum):
     CMS_ACADEMIC_NOTICE = ('cms_academic_notice', '행정학과 학사공지', 'http://cms.kookmin.ac.kr/paap/notice/notice.do', 'CMSAcademicNoticeScrapper')
     ME_ACADEMIC_NOTICE = ('me_academic_notice', '기계공학부 학사공지', 'http://cms.kookmin.ac.kr/mech/bbs/notice.do', 'MEAcademicNoticeScrapper')
     ID_ACADEMIC_NOTICE = ('id_academic_notice', '공업디자인학과 학사공지', 'https://id.kookmin.ac.kr/id/intro/notice.do', 'IdAcademicNoticeScrapper')
+    MCRAFT_ACADEMIC_NOTICE = ('mcraft_academic_notice', '금속공예학과 학사공지', 'http://mcraft.kookmin.ac.kr/?page_id=516', 'McraftAcademicNoticeScrapper')
     LINC_NOTICE = ('linc_notice', 'LINC 3.0 사업단 공지', 'https://linc.kookmin.ac.kr/main/menu?gc=605XOAS', 'LincNoticeScrapper')
     VCD_ACADEMIC_NOTICE = ('vcd_academic_notice', '시각디자인학과 학사공지', 'https://vcd.kookmin.ac.kr/vcd/etc-board/vcdnotice.do', 'VcdAcademicNoticeScrapper')
     # 서브도메인 + (학과) 게시판 종류 + {rss, bs4(x)}
