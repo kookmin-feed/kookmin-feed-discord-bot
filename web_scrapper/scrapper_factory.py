@@ -9,6 +9,7 @@ from web_scrapper.cms_academic_notice_scrapper import CMSAcademicNoticeScrapper
 from web_scrapper.me_academic_notice_scrapper import MEAcademicNoticeScrapper
 from web_scrapper.cs_scholarship_notice_scrapper import CsScholarshipNoticeScrapper
 from web_scrapper.linc_notice_scrapper import LincNoticeScrapper
+from web_scrapper.id_academic_notice_scrapper import IdAcademicNoticeScrapper
 
 class ScrapperFactory:
     """스크래퍼 객체를 생성하는 팩토리 클래스"""
@@ -23,6 +24,7 @@ class ScrapperFactory:
         'CMSAcademicNoticeScrapper': CMSAcademicNoticeScrapper,
         'MEAcademicNoticeScrapper': MEAcademicNoticeScrapper,
         'LincNoticeScrapper': LincNoticeScrapper,
+        'IdAcademicNoticeScrapper': IdAcademicNoticeScrapper,
     }
     
     def __new__(cls):

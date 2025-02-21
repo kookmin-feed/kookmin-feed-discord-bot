@@ -44,12 +44,6 @@ def is_working_hour():
 async def check_all_notices():
     """모든 스크래퍼를 실행하고 새로운 공지사항을 처리합니다."""
     try:
-        # 작동 시간이 아니면 스킵
-        if not is_working_hour():
-            current_time = datetime.now(pytz.timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M:%S')
-            logger.info(f"작동 시간이 아닙니다. (현재 시각: {current_time})")
-            return
-        
         # 활성화된 모든 스크래퍼 실행
         for scrapper_type in ScrapperType.get_active_scrappers():
             try:
