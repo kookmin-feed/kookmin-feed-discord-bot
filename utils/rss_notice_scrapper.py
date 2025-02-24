@@ -1,17 +1,16 @@
-import os
-import logging
 import feedparser
 from datetime import datetime
-import pytz
 from template.notice_data import NoticeData
-from template.scrapper_type import ScrapperType
+from utils.scrapper_type import ScrapperType
 from config.db_config import get_collection
-from web_scrapper.web_scrapper import WebScrapper
+from utils.web_scrapper import WebScrapper
 from bs4 import BeautifulSoup
 from config.logger_config import setup_logger
 
 
 class RSSNoticeScrapper(WebScrapper):
+    """RSS 피드 스크래퍼"""
+
     def __init__(self, url: str, scrapper_type: ScrapperType):
         """RSS 피드 스크래퍼를 초기화합니다.
 

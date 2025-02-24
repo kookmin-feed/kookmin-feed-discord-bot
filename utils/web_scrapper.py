@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-import logging
 import aiohttp
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -9,12 +8,12 @@ import pytz
 from template.notice_data import NoticeData
 from config.db_config import get_collection
 from config.logger_config import setup_logger
-from template.scrapper_type import ScrapperType
+from utils.scrapper_type import ScrapperType
 from typing import List
 
 
 class WebScrapper(ABC):
-    """웹 스크래퍼의 기본 클래스"""
+    """웹 스크래퍼 추상 클래스"""
 
     def __init__(self, url: str, scrapper_type: ScrapperType):
         self.url = url

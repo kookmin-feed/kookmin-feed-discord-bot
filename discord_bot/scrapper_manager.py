@@ -1,7 +1,7 @@
 from typing import List
 from config.db_config import get_database
 from config.logger_config import setup_logger
-from template.scrapper_type import ScrapperType
+from utils.scrapper_type import ScrapperType
 
 logger = setup_logger(__name__)
 

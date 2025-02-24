@@ -3,13 +3,12 @@ import sys
 import os
 from datetime import datetime
 import pytz
-from dotenv import load_dotenv
 from discord_bot.discord_bot import client, send_notice
-from template.scrapper_type import ScrapperType
+from utils.scrapper_type import ScrapperType
 from discord.ext import tasks
 from config.logger_config import setup_logger
 from config.db_config import get_database, close_database, save_notice
-from web_scrapper.scrapper_factory import ScrapperFactory
+from utils.scrapper_factory import ScrapperFactory
 from datetime import datetime
 import pytz
 from config.db_config import IS_PROD

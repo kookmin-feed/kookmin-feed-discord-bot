@@ -2,7 +2,7 @@ import os
 import logging
 from pymongo import MongoClient
 from template.notice_data import NoticeData
-from template.scrapper_type import ScrapperType
+from utils.scrapper_type import ScrapperType
 from config.env_loader import load_env_file
 
 logger = logging.getLogger(__name__)

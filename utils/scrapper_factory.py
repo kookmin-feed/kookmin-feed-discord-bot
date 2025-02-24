@@ -1,9 +1,9 @@
 from typing import Optional, Dict, Type
-from template.scrapper_type import ScrapperType
-from web_scrapper.web_scrapper import WebScrapper
+from utils.scrapper_type import ScrapperType
+from utils.web_scrapper import WebScrapper
 from web_scrapper.academic_notice_scrapper import AcademicNoticeScrapper
 from web_scrapper.sw_notice_scrapper import SWNoticeScrapper
-from web_scrapper.rss_notice_scrapper import RSSNoticeScrapper
+from utils.rss_notice_scrapper import RSSNoticeScrapper
 from web_scrapper.archi_all_notice_scrapper import ArchiNoticeScrapper
 from web_scrapper.cms_academic_notice_scrapper import CMSAcademicNoticeScrapper
 from web_scrapper.me_academic_notice_scrapper import MEAcademicNoticeScrapper

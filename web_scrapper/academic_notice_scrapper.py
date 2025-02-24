@@ -2,8 +2,8 @@ import logging
 from bs4 import BeautifulSoup
 from datetime import datetime
 from template.notice_data import NoticeData
-from template.scrapper_type import ScrapperType
-from web_scrapper.web_scrapper import WebScrapper
+from utils.scrapper_type import ScrapperType
+from utils.web_scrapper import WebScrapper
 from config.logger_config import setup_logger
 from config.db_config import get_collection
 
@@ -11,6 +11,8 @@ logger = setup_logger(__name__)
 
 
 class AcademicNoticeScrapper(WebScrapper):
+    """대학 학사공지 스크래퍼"""
+
     def __init__(self, url: str):
         super().__init__(url, ScrapperType.CS_ACADEMIC_NOTICE)
 
