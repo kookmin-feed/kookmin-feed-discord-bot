@@ -25,10 +25,11 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+.python-version
 
 # 가상환경
 venv/
-ENV/
+envs/
 
 # IDE 관련
 .idea/
@@ -37,3 +38,5 @@ ENV/
 *.swo 
 
 channel_config.json
+
+test.py
