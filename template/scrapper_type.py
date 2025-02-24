@@ -10,7 +10,7 @@ class ScrapperType(Enum):
         "cs_academic_notice",
         "대학 학사공지",
         "https://cs.kookmin.ac.kr/news/kookmin/academic/",
-        "cs_academic_notice",
+        "AcademicNoticeScrapper",
     )
     CS_SCHOLARSHIP_NOTICE = (
         "cs_scholarship_notice",
