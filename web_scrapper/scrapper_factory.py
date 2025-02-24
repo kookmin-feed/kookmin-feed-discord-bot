@@ -38,14 +38,14 @@ class ScrapperFactory:
     def create_scrapper(self, scrapper_type: ScrapperType) -> Optional[WebScrapper]:
         """스크래퍼 타입에 맞는 스크래퍼 객체를 생성합니다."""
         url = scrapper_type.get_url()
+
+        if scrapper_type.name.endswith('_RSS'):
+            return RSSNoticeScrapper(url, scrapper_type)
+        
         scrapper_class = self._scrapper_classes.get(scrapper_type.get_scrapper_class_name())
         
         if not scrapper_class:
             return None
-            
-        # RSS 스크래퍼인 경우 scrapper_type도 전달
-        if scrapper_type.name.endswith('_RSS'):
-            return scrapper_class(url, scrapper_type)
             
         # 일반 스크래퍼인 경우
         return scrapper_class(url) 

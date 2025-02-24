@@ -6,9 +6,9 @@ class ScrapperType(Enum):
     """스크래퍼 종류를 정의하는 열거형 클래스"""
     CS_ACADEMIC_NOTICE = ('cs_academic_notice','대학 학사공지', 'https://cs.kookmin.ac.kr/news/kookmin/academic/', 'AcademicNoticeScrapper')
     CS_SCHOLARSHIP_NOTICE = ('cs_scholarship_notice', '대학 장학공지', 'https://cs.kookmin.ac.kr/news/kookmin/scholarship/', 'CsScholarshipNoticeScrapper')
-    CS_SW_NOTICE_RSS = ('cs_sw_notice_rss','소융대 학사공지', 'https://cs.kookmin.ac.kr/news/notice/rss', 'RSSNoticeScrapper')
+    CS_SW_NOTICE_RSS = ('cs_sw_notice_rss','소융대 학사공지', 'https://cs.kookmin.ac.kr/news/notice/rss', 'cs_sw_notice_rss')
     SOFTWARE_NOTICE = ('software_notice','SW중심대학사업단 공지', 'https://software.kookmin.ac.kr/software/bulletin/notice.do', 'SWNoticeScrapper')
-    BIZ_ALL_NOTICE_RSS = ('biz_all_notice_rss','경영대 전체공지', 'https://biz.kookmin.ac.kr/news/notice/rss', 'RSSNoticeScrapper')
+    BIZ_ALL_NOTICE_RSS = ('biz_all_notice_rss','경영대 전체공지', 'https://biz.kookmin.ac.kr/community/notice/rss', 'biz_all_notice_rss')
     ARCHI_ALL_NOTICE = ('archi_all_notice','건축대 전체공지', 'https://archi.kookmin.ac.kr/life/notice/', 'ArchiNoticeScrapper')
     CMS_ACADEMIC_NOTICE = ('cms_academic_notice', '행정학과 학사공지', 'http://cms.kookmin.ac.kr/paap/notice/notice.do', 'CMSAcademicNoticeScrapper')
     ME_ACADEMIC_NOTICE = ('me_academic_notice', '기계공학부 학사공지', 'http://cms.kookmin.ac.kr/mech/bbs/notice.do', 'MEAcademicNoticeScrapper')

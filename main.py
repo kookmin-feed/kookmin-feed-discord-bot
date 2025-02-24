@@ -40,7 +40,7 @@ def is_working_hour():
         
     return True
 
-@tasks.loop(hours=1)
+@tasks.loop(minutes=10)
 async def check_all_notices():
     """모든 스크래퍼를 실행하고 새로운 공지사항을 처리합니다."""
     try:
