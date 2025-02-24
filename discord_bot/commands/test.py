@@ -110,6 +110,14 @@ async def setup(bot):
                 except Exception as e:
                     print(f"채널 정보 조회 실패 (ID: {channel_id}): {e}")
 
+            # 옵션이 25개를 초과하면 처리
+            if len(options) > 25:
+                await interaction.followup.send(
+                    "등록된 채널이 너무 많습니다. 처음 25개의 채널만 표시됩니다.",
+                    ephemeral=True
+                )
+                options = options[:25]  # 처음 25개만 사용
+
             if not options:
                 await interaction.followup.send("유효한 채널/유저를 찾을 수 없습니다.", ephemeral=True)
                 return
