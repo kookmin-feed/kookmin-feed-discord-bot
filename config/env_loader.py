@@ -31,5 +31,6 @@ def load_env_file():
 
     if env_file.exists():
         load_dotenv(env_file)
+        return is_prod
     else:
         raise FileNotFoundError("환경 변수 파일이 존재하지 않습니다!")

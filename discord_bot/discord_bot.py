@@ -4,6 +4,7 @@ from discord_bot.scrapper_manager import ScrapperConfig
 from template.scrapper_type import ScrapperType
 from template.notice_data import NoticeData
 from config.logger_config import setup_logger
+from config.db_config import IS_PROD
 
 logger = setup_logger(__name__)
 
@@ -31,6 +32,9 @@ class NoticeBot(discord.Client):  # discord.Client 클래스를 상속받음
 
         # 각 명령어 모듈 등록
         await register.setup(self)
+
+        if not IS_PROD:
+            await test.setup(self)
 
 
 client = NoticeBot()  # main.py에서 사용

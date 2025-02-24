@@ -12,6 +12,15 @@ from config.db_config import get_database, close_database, save_notice
 from web_scrapper.scrapper_factory import ScrapperFactory
 from datetime import datetime
 import pytz
+from config.db_config import IS_PROD
+
+
+if IS_PROD:
+    INTERVAL = 10
+else:
+    INTERVAL = 2
+
+print(f"INTERVAL: {INTERVAL}")
 
 
 async def process_new_notices(notices, scrapper_type: ScrapperType):
@@ -25,6 +34,9 @@ async def process_new_notices(notices, scrapper_type: ScrapperType):
 
 def is_working_hour():
     """현재 시간이 작동 시간(월~토 8시~20시)인지 확인합니다."""
+    if not IS_PROD:
+        return True
+
     now = datetime.now(pytz.timezone("Asia/Seoul"))
 
     # 일요일(6) 체크
@@ -32,13 +44,13 @@ def is_working_hour():
         return False
 
     # 시간 체크 (8시~20시)
-    if now.hour < 8 or now.hour >= 20:
+    if now.hour < 8 or now.hour >= 21:
         return False
 
     return True
 
 
-@tasks.loop(minutes=10)
+@tasks.loop(minutes=INTERVAL)
 async def check_all_notices():
     """모든 스크래퍼를 실행하고 새로운 공지사항을 처리합니다."""
     try:

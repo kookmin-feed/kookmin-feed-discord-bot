@@ -7,8 +7,7 @@ from config.env_loader import load_env_file
 
 logger = logging.getLogger(__name__)
 
-# 환경 변수 로드
-load_env_file()
+IS_PROD = load_env_file()  # 환경 변수 로드
 
 
 def get_database():
