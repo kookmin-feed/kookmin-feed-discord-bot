@@ -12,40 +12,46 @@ from web_scrapper.linc_notice_scrapper import LincNoticeScrapper
 from web_scrapper.id_academic_notice_scrapper import IdAcademicNoticeScrapper
 from web_scrapper.vcd_academic_notice_scrapper import VcdAcademicNoticeScrapper
 from web_scrapper.mcraft_academic_notice_scrapper import McraftAcademicNoticeScrapper
+
+
 class ScrapperFactory:
     """스크래퍼 객체를 생성하는 팩토리 클래스"""
-    
+
     _instance = None
     _scrapper_classes: Dict[str, Type[WebScrapper]] = {
-        'AcademicNoticeScrapper': AcademicNoticeScrapper,
-        'CsScholarshipNoticeScrapper': CsScholarshipNoticeScrapper,
-        'SWNoticeScrapper': SWNoticeScrapper,
-        'RSSNoticeScrapper': RSSNoticeScrapper,
-        'ArchiNoticeScrapper': ArchiNoticeScrapper,
-        'CMSAcademicNoticeScrapper': CMSAcademicNoticeScrapper,
-        'MEAcademicNoticeScrapper': MEAcademicNoticeScrapper,
-        'LincNoticeScrapper': LincNoticeScrapper,
-        'IdAcademicNoticeScrapper': IdAcademicNoticeScrapper,
-        'VcdAcademicNoticeScrapper': VcdAcademicNoticeScrapper,
-        'McraftAcademicNoticeScrapper': McraftAcademicNoticeScrapper,
+        "AcademicNoticeScrapper": AcademicNoticeScrapper,
+        "CsScholarshipNoticeScrapper": CsScholarshipNoticeScrapper,
+        "SWNoticeScrapper": SWNoticeScrapper,
+        "RSSNoticeScrapper": RSSNoticeScrapper,
+        "ArchiNoticeScrapper": ArchiNoticeScrapper,
+        "CMSAcademicNoticeScrapper": CMSAcademicNoticeScrapper,
+        "MEAcademicNoticeScrapper": MEAcademicNoticeScrapper,
+        "LincNoticeScrapper": LincNoticeScrapper,
+        "IdAcademicNoticeScrapper": IdAcademicNoticeScrapper,
+        "VcdAcademicNoticeScrapper": VcdAcademicNoticeScrapper,
+        "McraftAcademicNoticeScrapper": McraftAcademicNoticeScrapper,
     }
-    
+
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
-    
+
     def create_scrapper(self, scrapper_type: ScrapperType) -> Optional[WebScrapper]:
         """스크래퍼 타입에 맞는 스크래퍼 객체를 생성합니다."""
         url = scrapper_type.get_url()
 
-        if scrapper_type.name.endswith('_RSS'):
+        # RSS 스크래퍼인 경우
+        if scrapper_type.name.endswith("_RSS"):
             return RSSNoticeScrapper(url, scrapper_type)
-        
-        scrapper_class = self._scrapper_classes.get(scrapper_type.get_scrapper_class_name())
-        
-        if not scrapper_class:
-            return None
-            
+
         # 일반 스크래퍼인 경우
-        return scrapper_class(url) 
+        else:
+            scrapper_class = self._scrapper_classes.get(
+                scrapper_type.get_scrapper_class_name()
+            )
+
+            if not scrapper_class:
+                return None
+
+            return scrapper_class(url)
