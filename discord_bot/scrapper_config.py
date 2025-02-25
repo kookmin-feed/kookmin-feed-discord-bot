@@ -31,7 +31,6 @@ class ScrapperConfig:
             {"$addToSet": {"scrappers": scrapper_type.get_collection_name()}},
             upsert=True,
         )
-        print(result.modified_count)
         return result.modified_count > 0 or result.upserted_id is not None
 
     def remove_scrapper(self, channel_id: str, scrapper_type: ScrapperType) -> bool:
@@ -45,5 +44,4 @@ class ScrapperConfig:
     def get_channel_scrappers(self, channel_id: str) -> List[str]:
         """채널에 등록된 스크래퍼 목록을 반환합니다."""
         channel = self.collection.find_one({"_id": channel_id})
-        print(channel)
         return channel.get("scrappers", []) if channel else []
