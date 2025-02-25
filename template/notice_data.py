@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from template.scrapper_type import ScrapperType
+from utils.scrapper_type import ScrapperType
 
 
 @dataclass

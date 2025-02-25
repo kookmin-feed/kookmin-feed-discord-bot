@@ -1,8 +1,8 @@
 from bs4 import BeautifulSoup
 from datetime import datetime
 from template.notice_data import NoticeData
-from template.scrapper_type import ScrapperType
-from web_scrapper.web_scrapper import WebScrapper
+from utils.scrapper_type import ScrapperType
+from utils.web_scrapper import WebScrapper
 from config.logger_config import setup_logger
 
 logger = setup_logger(__name__)

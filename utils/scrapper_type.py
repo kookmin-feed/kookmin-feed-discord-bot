@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional, Tuple, Type
+from typing import Optional
 from discord import app_commands
 
 
@@ -22,7 +22,7 @@ class ScrapperType(Enum):
         "cs_sw_notice_rss",
         "소융대 학사공지",
         "https://cs.kookmin.ac.kr/news/notice/rss",
-        "cs_sw_notice_rss",
+        "RSSNoticeScrapper",
     )
     SOFTWARE_NOTICE = (
         "software_notice",
@@ -34,7 +34,7 @@ class ScrapperType(Enum):
         "biz_all_notice_rss",
         "경영대 전체공지",
         "https://biz.kookmin.ac.kr/community/notice/rss",
-        "biz_all_notice_rss",
+        "RSSNoticeScrapper",
     )
     ARCHI_ALL_NOTICE = (
         "archi_all_notice",
@@ -78,8 +78,8 @@ class ScrapperType(Enum):
         "https://vcd.kookmin.ac.kr/vcd/etc-board/vcdnotice.do",
         "VcdAcademicNoticeScrapper",
     )
-
     # 서브도메인 + (학과) 게시판 종류 + {rss, bs4(x)}
+
     def get_collection_name(self) -> str:
         """MongoDB 컬렉션 이름을 반환합니다."""
         return self.value[0]  # value는 tuple의 첫 번째 요소를 사용
