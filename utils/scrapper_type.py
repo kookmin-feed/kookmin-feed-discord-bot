@@ -22,7 +22,7 @@ class ScrapperType(Enum):
         "cs_sw_notice_rss",
         "소융대 학사공지",
         "https://cs.kookmin.ac.kr/news/notice/rss",
-        "cs_sw_notice_rss",
+        "RSSNoticeScrapper",
     )
     SOFTWARE_NOTICE = (
         "software_notice",
@@ -34,7 +34,7 @@ class ScrapperType(Enum):
         "biz_all_notice_rss",
         "경영대 전체공지",
         "https://biz.kookmin.ac.kr/community/notice/rss",
-        "biz_all_notice_rss",
+        "RSSNoticeScrapper",
     )
     ARCHI_ALL_NOTICE = (
         "archi_all_notice",
