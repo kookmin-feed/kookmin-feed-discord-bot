@@ -1,7 +1,6 @@
 from discord import app_commands
 import discord
 from utils.scrapper_type import ScrapperType
-from typing import Literal
 from config.logger_config import setup_logger
 
 logger = setup_logger(__name__)
