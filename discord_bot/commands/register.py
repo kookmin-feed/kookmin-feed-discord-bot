@@ -1,7 +1,9 @@
 from discord import app_commands
 import discord
 from utils.scrapper_type import ScrapperType
+from typing import Literal, List
 from config.logger_config import setup_logger
+from utils.scrapper_category import ScrapperCategory
 
 logger = setup_logger(__name__)
 
@@ -10,12 +12,13 @@ async def setup(bot):
     """공지 등록/삭제 관련 명령어들을 봇에 등록합니다."""
 
     @bot.tree.command(name="게시판_선택", description="알림을 받을 게시판을 선택합니다")
-    @app_commands.describe(scrapper="게시판 종류")
-    @app_commands.choices(scrapper=ScrapperType.get_choices())
-    async def register_notice(interaction: discord.Interaction, scrapper: str):
+    @app_commands.describe(category="게시판 카테고리", board="게시판 종류")
+    async def register_notice(
+        interaction: discord.Interaction, category: str, board: str
+    ):
         """공지사항 알림을 등록합니다."""
         try:
-            scrapper_type = ScrapperType.from_str(scrapper)
+            scrapper_type = ScrapperType.from_str(board)
             if not scrapper_type:
                 await interaction.response.send_message(
                     "올바르지 않은 게시판 입니다.", ephemeral=True
@@ -53,6 +56,34 @@ async def setup(bot):
             await interaction.response.send_message(
                 "알림 등록 중 오류가 발생했습니다.", ephemeral=True
             )
+
+    @register_notice.autocomplete("category")
+    async def category_autocomplete(
+        interaction: discord.Interaction,
+        current: str,
+    ) -> List[app_commands.Choice[str]]:
+        choices = ScrapperCategory.get_category_choices()
+        return [
+            app_commands.Choice(name=choice["name"], value=choice["value"])
+            for choice in choices
+            if current.lower() in choice["name"].lower()
+        ][:25]
+
+    @register_notice.autocomplete("board")
+    async def board_autocomplete(
+        interaction: discord.Interaction,
+        current: str,
+    ) -> List[app_commands.Choice[str]]:
+        category = interaction.namespace.category
+        if not category:
+            return []
+
+        choices = ScrapperCategory.get_scrapper_choices(category)
+        return [
+            app_commands.Choice(name=choice["name"], value=choice["value"])
+            for choice in choices
+            if current.lower() in choice["name"].lower()
+        ][:25]
 
     @bot.tree.command(
         name="게시판_선택취소", description="선택한 게시판의 알림을 취소합니다"
