@@ -1,7 +1,6 @@
 from discord import app_commands
 import discord
 from utils.scrapper_type import ScrapperType
-from typing import List
 from config.logger_config import setup_logger
 from utils.scrapper_category import ScrapperCategory
 
@@ -10,11 +9,10 @@ logger = setup_logger(__name__)
 
 class RegisterView(discord.ui.View):
     def __init__(self, interaction: discord.Interaction):
-        super().__init__(timeout=180)  # 3분 타임아웃
+        super().__init__(timeout=180)
         self.interaction = interaction
         self.category = None
         self.board = None
-        # 내부 namespace 변수 사용
         self._namespace = {"category": None, "board": None}
 
     @discord.ui.select(
@@ -88,8 +86,9 @@ class RegisterView(discord.ui.View):
             scrapper_type = ScrapperType.from_str(self.board)
             if isinstance(self.interaction.channel, discord.DMChannel):
                 channel_id = str(self.interaction.user.id)
-                channel_type = "DM"
-                logger.info(f"DM에서 등록: 사용자 ID {channel_id}")
+                channel_name = self.interaction.user.name
+                channel_type = "direct-messages"
+                guild_name = None  # DM은 서버가 없음
             else:
                 # 서버 채널인 경우 관리자 권한 확인
                 if not self.interaction.permissions.administrator:
@@ -98,17 +97,30 @@ class RegisterView(discord.ui.View):
                     )
                     return
                 channel_id = str(self.interaction.channel_id)
-                channel_type = f"채널 #{self.interaction.channel.name}"
-                logger.info(f"서버 채널에서 등록: 채널 ID {channel_id}")
+                channel_name = self.interaction.channel.name
+                channel_type = "server-channels"
+                guild_name = self.interaction.guild.name  # 서버 이름 가져오기
 
             if self.interaction.client.scrapper_config.add_scrapper(
-                channel_id, scrapper_type
+                channel_id,
+                channel_name,
+                channel_type,
+                scrapper_type,
+                guild_name,
             ):
                 # 등록 성공 시 '완료' 메시지로 변경
                 await self.interaction.edit_original_response(content="✅ 완료")
                 await followup.send(
                     content=f"이 {channel_type}을(를) {scrapper_type.get_korean_name()} 알림을 받을 채널로 등록했습니다."
                 )
+                if channel_type == "server-channels":
+                    logger.info(
+                        f"서버 채널에서 등록: 채널 ID - {channel_id} | 서버 이름 - {guild_name} | 채널 이름 - {channel_name} | 스크래퍼 타입 - {scrapper_type.get_korean_name()}"
+                    )
+                else:
+                    logger.info(
+                        f"DM에서 등록: 사용자 ID - {channel_id} | 사용자 이름 - {channel_name} | 스크래퍼 타입 - {scrapper_type.get_korean_name()}"
+                    )
             else:
                 # 이미 등록된 경우
                 await self.interaction.edit_original_response(content="❗ 실패")
@@ -159,8 +171,8 @@ async def setup(bot):
             # DM에서 실행된 경우 사용자 ID를 사용
             if isinstance(interaction.channel, discord.DMChannel):
                 channel_id = str(interaction.user.id)
-                channel_type = "DM"
-                logger.info(f"DM 채널에서 삭제: 사용자 ID {channel_id}")
+                channel_name = interaction.user.name
+                channel_type = "direct-messages"
             else:
                 # 서버 채널인 경우 관리자 권한 확인
                 if not interaction.permissions.administrator:
@@ -169,8 +181,9 @@ async def setup(bot):
                     )
                     return
                 channel_id = str(interaction.channel_id)
-                channel_type = f"채널 #{interaction.channel.name}"
-                logger.info(f"서버 채널에서 삭제: 채널 ID {channel_id}")
+                channel_type = "server-channels"
+                channel_name = interaction.channel.name
+                guild_name = interaction.guild.name
 
             scrapper_type = ScrapperType.from_str(type)
             if not scrapper_type:
@@ -178,11 +191,18 @@ async def setup(bot):
                     "올바르지 않은 스크래퍼 타입입니다.", ephemeral=True
                 )
                 return
-
             if interaction.client.scrapper_config.remove_scrapper(
-                channel_id, scrapper_type
+                channel_id, channel_type, scrapper_type
             ):
                 message = f"✅ 이 {channel_type}에서 {scrapper_type.get_korean_name()} 알림이 삭제되었습니다."
+                if channel_type == "server-channels":
+                    logger.info(
+                        f"서버 채널에서 삭제: 채널 ID - {channel_id} | 서버 이름 - {guild_name} | 채널 이름 - {channel_name} | 스크래퍼 타입 - {scrapper_type.get_korean_name()}"
+                    )
+                else:
+                    logger.info(
+                        f"DM 채널에서 삭제: 사용자 ID - {channel_id} | 사용자 이름 - {channel_name} | 스크래퍼 타입 - {scrapper_type.get_korean_name()}"
+                    )
             else:
                 message = f"❗ 이 {channel_type}에는 {scrapper_type.get_korean_name()} 알림이 등록되어 있지 않습니다."
 
@@ -203,12 +223,13 @@ async def setup(bot):
             # DM인지 서버 채널인지 확인
             if isinstance(interaction.channel, discord.DMChannel):
                 channel_id = str(interaction.user.id)
-                channel_type = "DM"
-                logger.info(f"DM에서 목록 조회: 사용자 ID {channel_id}")
+                channel_type = "direct-messages"
+                channel_name = interaction.user.name
             else:
                 channel_id = str(interaction.channel_id)
-                channel_type = f"채널 #{interaction.channel.name}"
-                logger.info(f"서버 채널에서 목록 조회: 채널 ID {channel_id}")
+                channel_type = "server-channels"
+                channel_name = interaction.channel.name
+                guild_name = interaction.guild.name
 
             # 등록된 스크래퍼 목록 가져오기
             scrapper_type_list = (
@@ -226,6 +247,15 @@ async def setup(bot):
                 )
             else:
                 message = f"현재 {channel_type}에 등록된 알림이 없습니다."
+
+            if channel_type == "direct-messages":
+                logger.info(
+                    f"DM에서 목록 조회: 사용자 ID - {channel_id} | 사용자 이름 - {channel_name}"
+                )
+            else:
+                logger.info(
+                    f"서버 채널에서 목록 조회: 채널 ID - {channel_id} | 서버 이름 - {guild_name} | 채널 이름 - {channel_name}"
+                )
 
             await interaction.response.send_message(message, ephemeral=True)
 
