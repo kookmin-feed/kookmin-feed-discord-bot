@@ -28,7 +28,13 @@ class ScrapperCategory(Enum):
 
     SOCIAL_SCIENCE_CATEGORY = ("사회과학대학", [ScrapperType.CMS_ACADEMIC_NOTICE])
 
-    CREATIVE_ENGINEERING_CATEGORY = ("창의공과대학", [ScrapperType.ME_ACADEMIC_NOTICE])
+    CREATIVE_ENGINEERING_CATEGORY = (
+        "창의공과대학",
+        [
+            ScrapperType.ME_ACADEMIC_NOTICE,
+            ScrapperType.EE_ACADEMIC_NOTICE_RSS,
+        ],
+    )
 
     DESIGN_CATEGORY = (
         "조형대학",
@@ -40,6 +46,13 @@ class ScrapperCategory(Enum):
     )
 
     OTHERS_CATEGORY = ("사업단 및 부속기관", [ScrapperType.LINC_NOTICE])
+
+    CAR_CATEGORY = (
+        "자동차융합대학",
+        [
+            ScrapperType.AUTO_ACADEMIC_NOTICE,
+        ],
+    )
 
     def __init__(self, korean_name: str, scrapper_types: List[ScrapperType]):
         self.korean_name = korean_name

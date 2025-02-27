@@ -12,6 +12,7 @@ from web_scrapper.linc_notice_scrapper import LincNoticeScrapper
 from web_scrapper.id_academic_notice_scrapper import IdAcademicNoticeScrapper
 from web_scrapper.vcd_academic_notice_scrapper import VcdAcademicNoticeScrapper
 from web_scrapper.mcraft_academic_notice_scrapper import McraftAcademicNoticeScrapper
+from web_scrapper.auto_academic_notice_scrapper import AutoAcademicNoticeScrapper
 
 
 class ScrapperFactory:
@@ -30,6 +31,7 @@ class ScrapperFactory:
         "IdAcademicNoticeScrapper": IdAcademicNoticeScrapper,
         "VcdAcademicNoticeScrapper": VcdAcademicNoticeScrapper,
         "McraftAcademicNoticeScrapper": McraftAcademicNoticeScrapper,
+        "AutoAcademicNoticeScrapper": AutoAcademicNoticeScrapper,
     }
 
     def __new__(cls):
