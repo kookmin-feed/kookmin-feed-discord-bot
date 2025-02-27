@@ -28,7 +28,13 @@ class ScrapperCategory(Enum):
 
     SOCIAL_SCIENCE_CATEGORY = ("사회과학대학", [ScrapperType.CMS_ACADEMIC_NOTICE])
 
-    CREATIVE_ENGINEERING_CATEGORY = ("창의공과대학", [ScrapperType.ME_ACADEMIC_NOTICE])
+    CREATIVE_ENGINEERING_CATEGORY = (
+        "창의공과대학",
+        [
+            ScrapperType.ME_ACADEMIC_NOTICE,
+            ScrapperType.EE_ACADEMIC_NOTICE_RSS,
+        ],
+    )
 
     DESIGN_CATEGORY = (
         "조형대학",
