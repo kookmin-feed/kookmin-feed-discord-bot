@@ -1,6 +1,6 @@
 import discord
 from discord import app_commands
-from discord_bot.scrapper_manager import ScrapperConfig
+from discord_bot.scrapper_config import ScrapperConfig
 from utils.scrapper_type import ScrapperType
 from template.notice_data import NoticeData
 from config.logger_config import setup_logger
