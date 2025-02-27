@@ -78,6 +78,12 @@ class ScrapperType(Enum):
         "https://vcd.kookmin.ac.kr/vcd/etc-board/vcdnotice.do",
         "VcdAcademicNoticeScrapper",
     )
+    EE_ACADEMIC_NOTICE_RSS = (
+        "ee_academic_notice_rss",
+        "전자공학부 학사공지",
+        "https://ee.kookmin.ac.kr/community/board/notice/rss",
+        "RSSNoticeScrapper",
+    )
     # 서브도메인 + (학과) 게시판 종류 + {rss, bs4(x)}
 
     def get_collection_name(self) -> str:
