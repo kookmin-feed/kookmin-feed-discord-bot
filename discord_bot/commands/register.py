@@ -163,50 +163,165 @@ async def setup(bot):
     @bot.tree.command(
         name="게시판_선택취소", description="선택한 게시판의 알림을 취소합니다"
     )
-    @app_commands.describe(type="게시판 종류")
-    @app_commands.choices(type=ScrapperType.get_choices())
-    async def unregister_notice(interaction: discord.Interaction, type: str):
+    async def unregister_notice(interaction: discord.Interaction):
         """현재 채널에서 선택한 유형의 공지사항 알림을 삭제합니다."""
         try:
-            # DM에서 실행된 경우 사용자 ID를 사용
-            if isinstance(interaction.channel, discord.DMChannel):
-                channel_id = str(interaction.user.id)
-                channel_name = interaction.user.name
-                channel_type = "direct-messages"
-            else:
-                # 서버 채널인 경우 관리자 권한 확인
+            # 서버 채널인 경우 관리자 권한 확인
+            if not isinstance(interaction.channel, discord.DMChannel):
                 if not interaction.permissions.administrator:
                     await interaction.response.send_message(
                         "이 명령어는 관리자 권한이 필요합니다.", ephemeral=True
                     )
                     return
-                channel_id = str(interaction.channel_id)
-                channel_type = "server-channels"
-                channel_name = interaction.channel.name
-                guild_name = interaction.guild.name
 
-            scrapper_type = ScrapperType.from_str(type)
-            if not scrapper_type:
+            # 채널 정보 설정
+            channel_id = (
+                str(interaction.user.id)
+                if isinstance(interaction.channel, discord.DMChannel)
+                else str(interaction.channel_id)
+            )
+            channel_type = (
+                "direct-messages"
+                if isinstance(interaction.channel, discord.DMChannel)
+                else "server-channels"
+            )
+
+            # 등록된 스크래퍼 목록 가져오기
+            registered_scrappers = (
+                interaction.client.scrapper_config.get_channel_scrappers(channel_id)
+            )
+
+            if not registered_scrappers:
                 await interaction.response.send_message(
-                    "올바르지 않은 스크래퍼 타입입니다.", ephemeral=True
+                    "현재 등록된 알림이 없습니다.", ephemeral=True
                 )
                 return
-            if interaction.client.scrapper_config.remove_scrapper(
-                channel_id, channel_type, scrapper_type
-            ):
-                message = f"✅ 이 {channel_type}에서 {scrapper_type.get_korean_name()} 알림이 삭제되었습니다."
-                if channel_type == "server-channels":
-                    logger.info(
-                        f"서버 채널에서 삭제: 채널 ID - {channel_id} | 서버 이름 - {guild_name} | 채널 이름 - {channel_name} | 스크래퍼 타입 - {scrapper_type.get_korean_name()}"
-                    )
-                else:
-                    logger.info(
-                        f"DM 채널에서 삭제: 사용자 ID - {channel_id} | 사용자 이름 - {channel_name} | 스크래퍼 타입 - {scrapper_type.get_korean_name()}"
-                    )
-            else:
-                message = f"❗ 이 {channel_type}에는 {scrapper_type.get_korean_name()} 알림이 등록되어 있지 않습니다."
 
-            await interaction.response.send_message(message, ephemeral=True)
+            # 등록된 스크래퍼들의 카테고리 찾기
+            registered_categories = set()
+            all_categories = ScrapperCategory.get_category_choices()
+
+            for category in all_categories:
+                category_scrappers = ScrapperCategory.get_scrapper_choices(
+                    category["value"]
+                )
+                for scrapper in category_scrappers:
+                    if scrapper["value"].lower() in registered_scrappers:
+                        registered_categories.add(category["value"])
+                        break
+
+            # 등록된 카테고리가 없는 경우 처리
+            if not registered_categories:
+                await interaction.response.send_message(
+                    "현재 등록된 알림이 없습니다.", ephemeral=True
+                )
+                return
+
+            # 카테고리 선택 메뉴 생성
+            category_select = discord.ui.Select(
+                placeholder="게시판 카테고리를 선택하세요",
+                options=[
+                    discord.SelectOption(
+                        label=category["name"], value=category["value"]
+                    )
+                    for category in all_categories
+                    if category["value"] in registered_categories
+                ],
+            )
+
+            # 게시판 선택 메뉴 생성
+            board_select = discord.ui.Select(
+                placeholder="게시판을 선택하세요",
+                options=[
+                    discord.SelectOption(label="카테고리를 선택해주세요", value="none")
+                ],
+            )
+
+            # 카테고리 선택 콜백
+            async def category_callback(interaction: discord.Interaction):
+                try:
+                    selected_category = category_select.values[0]
+
+                    # 선택된 카테고리 이름 찾기
+                    selected_category_name = next(
+                        (
+                            category["name"]
+                            for category in all_categories
+                            if category["value"] == selected_category
+                        ),
+                        "알 수 없는 카테고리",
+                    )
+
+                    # 카테고리 선택 메뉴의 placeholder 업데이트
+                    category_select.placeholder = selected_category_name
+
+                    # 선택된 카테고리의 게시판 중 등록된 것만 필터링
+                    category_scrappers = ScrapperCategory.get_scrapper_choices(
+                        selected_category
+                    )
+                    registered_boards = [
+                        scrapper
+                        for scrapper in category_scrappers
+                        if scrapper["value"].lower() in registered_scrappers
+                    ]
+
+                    # 게시판 선택 옵션 업데이트
+                    board_select.options = [
+                        discord.SelectOption(label=board["name"], value=board["value"])
+                        for board in registered_boards
+                    ]
+                    board_select.placeholder = "게시판을 선택하세요"
+
+                    await interaction.response.edit_message(view=view)
+
+                except Exception as e:
+                    logger.error(f"카테고리 선택 중 오류 발생: {e}")
+                    await interaction.response.send_message(
+                        "카테고리 선택 중 오류가 발생했습니다.", ephemeral=True
+                    )
+
+            # 게시판 선택 콜백
+            async def board_callback(interaction: discord.Interaction):
+                try:
+                    selected_board = board_select.values[0]
+                    scrapper_type = ScrapperType.from_str(selected_board)
+
+                    if interaction.client.scrapper_config.remove_scrapper(
+                        channel_id, channel_type, scrapper_type
+                    ):
+                        message = f"✅ 이 {channel_type}에서 {scrapper_type.get_korean_name()} 알림이 삭제되었습니다."
+                        if channel_type == "server-channels":
+                            logger.info(
+                                f"서버 채널에서 삭제: 채널 ID - {channel_id} | 서버 이름 - {interaction.guild.name} | 채널 이름 - {interaction.channel.name} | 스크래퍼 타입 - {scrapper_type.get_korean_name()}"
+                            )
+                        else:
+                            logger.info(
+                                f"DM에서 삭제: 사용자 ID - {channel_id} | 사용자 이름 - {interaction.user.name} | 스크래퍼 타입 - {scrapper_type.get_korean_name()}"
+                            )
+                    else:
+                        message = f"❗ 이 {channel_type}에는 {scrapper_type.get_korean_name()} 알림이 등록되어 있지 않습니다."
+
+                    await interaction.response.edit_message(content=message, view=None)
+
+                except Exception as e:
+                    logger.error(f"게시판 선택 중 오류 발생: {e}")
+                    await interaction.response.send_message(
+                        "게시판 선택 중 오류가 발생했습니다.", ephemeral=True
+                    )
+
+            # 콜백 설정
+            category_select.callback = category_callback
+            board_select.callback = board_callback
+
+            # View 생성 및 컴포넌트 추가
+            view = discord.ui.View(timeout=180)
+            view.add_item(category_select)
+            view.add_item(board_select)
+
+            # 메시지 전송
+            await interaction.response.send_message(
+                "취소할 게시판을 선택해주세요:", view=view, ephemeral=True
+            )
 
         except Exception as e:
             logger.error(f"알림 삭제 중 오류 발생: {e}")
