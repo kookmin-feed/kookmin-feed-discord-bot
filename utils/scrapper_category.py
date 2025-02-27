@@ -47,6 +47,13 @@ class ScrapperCategory(Enum):
 
     OTHERS_CATEGORY = ("사업단 및 부속기관", [ScrapperType.LINC_NOTICE])
 
+    CAR_CATEGORY = (
+        "자동차융합대학",
+        [
+            ScrapperType.AUTO_ACADEMIC_NOTICE,
+        ],
+    )
+
     def __init__(self, korean_name: str, scrapper_types: List[ScrapperType]):
         self.korean_name = korean_name
         self.scrapper_types = scrapper_types
