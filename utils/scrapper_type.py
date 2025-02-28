@@ -4,13 +4,37 @@ from discord import app_commands
 
 
 class ScrapperType(Enum):
-    """스크래퍼 종류를 정의하는 열거형 클래스"""
+    """스크래퍼 종류를 정의하는 열거형 클래스
+
+    각 스크래퍼는 다음과 같은 4개의 값을 튜플로 가집니다:
+        1. collection_name (str): MongoDB 컬렉션 이름으로 사용될 식별자
+        2. korean_name (str): 사용자에게 보여질 한글 이름
+        3. url (str): 크롤링할 웹페이지의 URL
+        4. scrapper_class_name (str): 사용할 스크래퍼 클래스 이름
+
+    예시:
+        UNIVERSITY_ACADEMIC = (
+            "university_academic",      # MongoDB 컬렉션 이름
+            "대학 학사공지",            # 한글 이름
+            "https://example.com",      # 크롤링 URL
+            "UniversityAcademicScrapper" # 스크래퍼 클래스 이름
+        )
+
+    Methods:
+        get_collection_name(): MongoDB 컬렉션 이름 반환
+        get_korean_name(): 한글 이름 반환
+        get_url(): 크롤링 URL 반환
+        get_scrapper_class_name(): 스크래퍼 클래스 이름 반환
+        from_str(value: str): 문자열로부터 ScrapperType 객체 생성
+        get_choices(): 디스코드 명령어용 선택지 목록 반환
+        get_active_scrappers(): 활성화된 모든 스크래퍼 타입 목록 반환
+    """
 
     UNIVERSITY_ACADEMIC = (
-        "university_academic",
-        "대학 학사공지",
-        "https://cs.kookmin.ac.kr/news/kookmin/academic/",
-        "UniversityAcademicScrapper",
+        "university_academic",  # collection_name
+        "대학 학사공지",  # korean_name
+        "https://cs.kookmin.ac.kr/news/kookmin/academic/",  # url
+        "UniversityAcademicScrapper",  # scrapper_class_name
     )
     UNIVERSITY_SCHOLARSHIP = (
         "university_scholarship",
@@ -90,11 +114,10 @@ class ScrapperType(Enum):
         "https://auto.kookmin.ac.kr/board/notice/?&pn=0",
         "AutomativeengineeringAcademicScrapper",
     )
-    # 서브도메인 + (학과) 게시판 종류 + {rss, bs4(x)}
 
     def get_collection_name(self) -> str:
         """MongoDB 컬렉션 이름을 반환합니다."""
-        return self.value[0]  # value는 tuple의 첫 번째 요소를 사용
+        return self.value[0]
 
     def get_korean_name(self) -> str:
         """스크래퍼 타입의 한글 이름을 반환합니다."""
@@ -110,15 +133,26 @@ class ScrapperType(Enum):
 
     @classmethod
     def from_str(cls, value: str) -> Optional["ScrapperType"]:
-        """문자열로부터 ScrapperType을 생성합니다."""
+        """문자열로부터 ScrapperType을 생성합니다.
+
+        Args:
+            value (str): ScrapperType의 이름 (예: "UNIVERSITY_ACADEMIC")
+
+        Returns:
+            Optional[ScrapperType]: 해당하는 ScrapperType 객체 또는 None
+        """
         try:
-            return cls[value.upper()]  # Enum의 value로 직접 생성
+            return cls[value.upper()]
         except ValueError:
             return None
 
     @classmethod
     def get_choices(cls) -> list:
-        """디스코드 명령어용 선택지 목록을 반환합니다."""
+        """디스코드 명령어용 선택지 목록을 반환합니다.
+
+        Returns:
+            list[app_commands.Choice]: 한글 이름과 enum 이름으로 구성된 선택지 목록
+        """
         return [
             app_commands.Choice(name=type.get_korean_name(), value=type.name)
             for type in cls
@@ -126,5 +160,9 @@ class ScrapperType(Enum):
 
     @classmethod
     def get_active_scrappers(cls) -> list:
-        """활성화된 스크래퍼 타입들을 반환합니다."""
-        return list(cls)  # 모든 스크래퍼가 활성화됨
+        """활성화된 스크래퍼 타입들을 반환합니다.
+
+        Returns:
+            list[ScrapperType]: 현재 활성화된 모든 스크래퍼 타입 목록
+        """
+        return list(cls)
