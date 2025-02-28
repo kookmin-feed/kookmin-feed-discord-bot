@@ -1,13 +1,12 @@
-import os
 import logging
 from pymongo import MongoClient
 from template.notice_data import NoticeData
 from utils.scrapper_type import ScrapperType
-from config.env_loader import load_env_file
+from config.env_loader import ENV
 
 logger = logging.getLogger(__name__)
 
-IS_PROD = load_env_file()  # 환경 변수 로드
+IS_PROD = ENV["IS_PROD"]  # env_loader에서 가져옴
 
 
 def get_database(db_name: str = None):
@@ -18,9 +17,9 @@ def get_database(db_name: str = None):
             미지정시 환경변수의 DB_NAME 또는 기본값 사용
     """
     try:
-        client = MongoClient(os.getenv("MONGODB_URI"))
+        client = MongoClient(ENV["MONGODB_URI"])
         default_db = "dev-kookmin-feed" if not IS_PROD else "kookmin-feed"
-        db_name = db_name or os.getenv("DB_NAME", default_db)
+        db_name = db_name or ENV["DB_NAME"] or default_db
         return client[db_name]
     except Exception as e:
         logger.error(f"DB 연결 중 오류 발생: {e}")
@@ -36,7 +35,7 @@ def get_collection(scrapper_type: str, db_name: str = None):
 def close_database():
     """데이터베이스 연결을 종료합니다."""
     try:
-        client = MongoClient(os.getenv("MONGODB_URI"))
+        client = MongoClient(ENV["MONGODB_URI"])
         client.close()
     except Exception as e:
         logger.error(f"DB 연결 종료 중 오류 발생: {e}")
