@@ -6,89 +6,89 @@ from discord import app_commands
 class ScrapperType(Enum):
     """스크래퍼 종류를 정의하는 열거형 클래스"""
 
-    CS_ACADEMIC_NOTICE = (
-        "cs_academic_notice",
+    UNIVERSITY_ACADEMIC = (
+        "university_academic",
         "대학 학사공지",
         "https://cs.kookmin.ac.kr/news/kookmin/academic/",
-        "AcademicNoticeScrapper",
+        "UniversityAcademicScrapper",
     )
-    CS_SCHOLARSHIP_NOTICE = (
-        "cs_scholarship_notice",
+    UNIVERSITY_SCHOLARSHIP = (
+        "university_scholarship",
         "대학 장학공지",
         "https://cs.kookmin.ac.kr/news/kookmin/scholarship/",
-        "CsScholarshipNoticeScrapper",
+        "UniversityScholarshipScrapper",
     )
-    CS_SW_NOTICE_RSS = (
-        "cs_sw_notice_rss",
+    COMPUTERSCIENCE_ACADEMIC_RSS = (
+        "computerscience_academic_rss",
         "소융대 학사공지",
         "https://cs.kookmin.ac.kr/news/notice/rss",
         "RSSNoticeScrapper",
     )
-    SOFTWARE_NOTICE = (
-        "software_notice",
-        "SW중심대학사업단 공지",
+    SOFTWARECENTERED_ACADEMIC = (
+        "softwarecentered_academic",
+        "SW중심대학사업단 학사공지",
         "https://software.kookmin.ac.kr/software/bulletin/notice.do",
-        "SWNoticeScrapper",
+        "SoftwarecenteredAcademicScrapper",
     )
-    BIZ_ALL_NOTICE_RSS = (
-        "biz_all_notice_rss",
-        "경영대 전체공지",
+    BUSINESSADMINISTRATION_ACADEMIC_RSS = (
+        "businessadministration_academic_rss",
+        "경영대 학사공지",
         "https://biz.kookmin.ac.kr/community/notice/rss",
         "RSSNoticeScrapper",
     )
-    ARCHI_ALL_NOTICE = (
-        "archi_all_notice",
-        "건축대 전체공지",
+    ARCHITECTURE_ACADEMIC = (
+        "architecture_academic",
+        "건축대 학사공지",
         "https://archi.kookmin.ac.kr/life/notice/",
-        "ArchiNoticeScrapper",
+        "ArchitectureAcademicScrapper",
     )
-    CMS_ACADEMIC_NOTICE = (
-        "cms_academic_notice",
+    SOCIALSCIENCE_PUBLICADMINISTRATION_ACADEMIC = (
+        "socialscience_publicadministration_academic",
         "행정학과 학사공지",
         "http://cms.kookmin.ac.kr/paap/notice/notice.do",
-        "CMSAcademicNoticeScrapper",
+        "SocialsciencePublicadministrationAcademicScrapper",
     )
-    ME_ACADEMIC_NOTICE = (
-        "me_academic_notice",
+    CREATIVEENGINEERING_MECHANICAL_ACADEMIC = (
+        "creativeengineering_mechanical_academic",
         "기계공학부 학사공지",
         "http://cms.kookmin.ac.kr/mech/bbs/notice.do",
-        "MEAcademicNoticeScrapper",
+        "CreativeengineeringMechanicalAcademicScrapper",
     )
-    ID_ACADEMIC_NOTICE = (
-        "id_academic_notice",
+    DESIGN_INDUSTRIAL_ACADEMIC = (
+        "design_industrial_academic",
         "공업디자인학과 학사공지",
         "https://id.kookmin.ac.kr/id/intro/notice.do",
-        "IdAcademicNoticeScrapper",
+        "DesignIndustrialAcademicScrapper",
     )
-    MCRAFT_ACADEMIC_NOTICE = (
-        "mcraft_academic_notice",
+    DESIGN_METALWORK_ACADEMIC = (
+        "design_metalwork_academic",
         "금속공예학과 학사공지",
         "http://mcraft.kookmin.ac.kr/?page_id=516",
-        "McraftAcademicNoticeScrapper",
+        "DesignMetalworkAcademicScrapper",
     )
-    LINC_NOTICE = (
-        "linc_notice",
-        "LINC 3.0 사업단 공지",
+    LINC_ACADEMIC = (
+        "linc_academic",
+        "LINC 3.0 사업단 학사공지",
         "https://linc.kookmin.ac.kr/main/menu?gc=605XOAS",
-        "LincNoticeScrapper",
+        "LincAcademicScrapper",
     )
-    VCD_ACADEMIC_NOTICE = (
-        "vcd_academic_notice",
+    DESIGN_VISUAL_ACADEMIC = (
+        "design_visual_academic",
         "시각디자인학과 학사공지",
         "https://vcd.kookmin.ac.kr/vcd/etc-board/vcdnotice.do",
-        "VcdAcademicNoticeScrapper",
+        "DesignVisualAcademicScrapper",
     )
-    EE_ACADEMIC_NOTICE_RSS = (
-        "ee_academic_notice_rss",
+    CREATIVEENGINEERING_ELECTRICAL_ACADEMIC_RSS = (
+        "creativeengineering_electrical_academic_rss",
         "전자공학부 학사공지",
         "https://ee.kookmin.ac.kr/community/board/notice/rss",
         "RSSNoticeScrapper",
     )
-    AUTO_ACADEMIC_NOTICE = (
-        "auto_academic_notice",
-        "자동차융합대학 단과대공지",
+    AUTOMATIVEENGINEERING_ACADEMIC = (
+        "automativeengineering_academic",
+        "자동차융합대학 학사공지",
         "https://auto.kookmin.ac.kr/board/notice/?&pn=0",
-        "AutoAcademicNoticeScrapper",
+        "AutomativeengineeringAcademicScrapper",
     )
     # 서브도메인 + (학과) 게시판 종류 + {rss, bs4(x)}
 

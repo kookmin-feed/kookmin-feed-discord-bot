@@ -5,11 +5,11 @@ from utils.scrapper_type import ScrapperType
 from datetime import datetime
 
 
-class AutoAcademicNoticeScrapper(WebScrapper):
+class AutomativeengineeringAcademicScrapper(WebScrapper):
     """자동차융합대학 학사공지 스크래퍼"""
 
     def __init__(self, url: str):
-        super().__init__(url, ScrapperType.AUTO_ACADEMIC_NOTICE)
+        super().__init__(url, ScrapperType.AUTOMATIVEENGINEERING_ACADEMIC)
 
     def get_list_elements(self, soup: BeautifulSoup) -> list[Tag]:
         """공지사항 목록의 각 요소를 가져옵니다."""
@@ -53,7 +53,7 @@ class AutoAcademicNoticeScrapper(WebScrapper):
                 title=title,
                 link=full_url,
                 published=date,
-                scrapper_type=ScrapperType.AUTO_ACADEMIC_NOTICE,
+                scrapper_type=self.scrapper_type,
             )
 
         except Exception as e:

@@ -8,51 +8,51 @@ from config.logger_config import setup_logger
 logger = setup_logger(__name__)
 
 
-class LincNoticeScrapper(WebScrapper):
-    """LINC 3.0 사업단 공지사항 스크래퍼"""
+class UniversityScholarshipScrapper(WebScrapper):
+    """대학 장학공지 스크래퍼"""
 
     def __init__(self, url: str):
-        super().__init__(url, ScrapperType.LINC_NOTICE)
+        super().__init__(url, ScrapperType.UNIVERSITY_SCHOLARSHIP)
 
     def get_list_elements(self, soup: BeautifulSoup) -> list:
-        """공지사항 목록의 HTML 요소들을 가져옵니다."""
-        return soup.select(".board_list .content_wrap li")
+        """장학공지 목록의 HTML 요소들을 가져옵니다."""
+        return soup.select(".list-tbody ul")
 
     async def parse_notice_from_element(self, element) -> NoticeData:
-        """HTML 요소에서 공지사항 정보를 추출합니다."""
+        """HTML 요소에서 장학공지 정보를 추출합니다."""
         try:
             # 공지사항 여부 확인
-            is_notice = element.select_one(".icon_notice") is not None
+            is_notice = element.select_one(".notice") is not None
 
             # 제목과 링크 추출
-            title_element = element.select_one("a")
+            title_element = element.select_one(".subject a")
             if not title_element:
                 return None
 
-            title = title_element.select_one(".tit0").get_text(strip=True)
-
-            # 상대 경로 추출 및 URL 생성
+            title = title_element.get_text(strip=True)
             relative_link = title_element.get("href", "")
-            if relative_link.startswith("https://"):
-                link = relative_link
-            else:
-                link = (
-                    f"https://linc.kookmin.ac.kr/main/menu{relative_link[1:]}"
-                    if relative_link.startswith("/")
-                    else f"https://linc.kookmin.ac.kr/main/menu{relative_link}"
-                )
+            link = f"https://cs.kookmin.ac.kr/news/kookmin/scholarship/{relative_link}"
 
             # 날짜 추출
             date_str = element.select_one(".date").get_text(strip=True)
 
+            # 다양한 날짜 형식 처리
             try:
+                # YYYY-MM-DD 형식
                 published = datetime.strptime(date_str, "%Y-%m-%d").replace(
                     tzinfo=self.kst
                 )
             except ValueError:
-                published = datetime.strptime(date_str, "%Y.%m.%d").replace(
-                    tzinfo=self.kst
-                )
+                try:
+                    # YYYY.MM.DD 형식
+                    published = datetime.strptime(date_str, "%Y.%m.%d").replace(
+                        tzinfo=self.kst
+                    )
+                except ValueError:
+                    # YY.MM.DD 형식
+                    published = datetime.strptime(date_str, "%y.%m.%d").replace(
+                        tzinfo=self.kst
+                    )
 
             return NoticeData(
                 title=title,
