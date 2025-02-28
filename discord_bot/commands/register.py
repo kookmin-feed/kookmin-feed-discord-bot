@@ -1,4 +1,3 @@
-from discord import app_commands
 import discord
 from utils.scrapper_type import ScrapperType
 from config.logger_config import setup_logger
