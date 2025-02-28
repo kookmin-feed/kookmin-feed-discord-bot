@@ -1,6 +1,5 @@
 import asyncio
 import sys
-import os
 from datetime import datetime
 import pytz
 from discord_bot.discord_bot import client, send_notice
