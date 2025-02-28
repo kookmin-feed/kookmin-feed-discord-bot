@@ -4,12 +4,8 @@ from utils.scrapper_type import ScrapperType
 from template.notice_data import NoticeData
 from datetime import datetime
 from config.db_config import get_database, save_notice
-from discord.ext import commands
 from config.logger_config import setup_logger
-from web_scrapper.academic_notice_scrapper import AcademicNoticeScrapper
-from web_scrapper.sw_notice_scrapper import SWNoticeScrapper
 from utils.rss_notice_scrapper import RSSNoticeScrapper
-from web_scrapper.archi_all_notice_scrapper import ArchiNoticeScrapper
 import feedparser
 import aiohttp
 from bs4 import BeautifulSoup

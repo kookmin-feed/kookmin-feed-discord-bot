@@ -8,11 +8,11 @@ from config.logger_config import setup_logger
 logger = setup_logger(__name__)
 
 
-class ArchiNoticeScrapper(WebScrapper):
+class ArchitectureAcademicScrapper(WebScrapper):
     """건축대학 단과대공지 스크래퍼"""
 
     def __init__(self, url: str):
-        super().__init__(url, ScrapperType.ARCHI_ALL_NOTICE)
+        super().__init__(url, ScrapperType.ARCHITECTURE_ACADEMIC)
 
     def get_list_elements(self, soup: BeautifulSoup) -> list:
         """건축대학 공지사항 목록의 HTML 요소들을 가져옵니다."""

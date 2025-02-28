@@ -9,48 +9,68 @@ class ScrapperCategory(Enum):
     UNIVERSITY_CATEGORY = (
         "국민대",
         [
-            ScrapperType.CS_ACADEMIC_NOTICE,
-            ScrapperType.CS_SCHOLARSHIP_NOTICE,
+            ScrapperType.UNIVERSITY_ACADEMIC,
+            ScrapperType.UNIVERSITY_SCHOLARSHIP,
         ],
     )
 
-    SOFTWARE_CATEGORY = (
+    COMPUTERSCIENCE_CATEGORY = (
         "소프트웨어융합대학",
         [
-            ScrapperType.CS_SW_NOTICE_RSS,
-            ScrapperType.SOFTWARE_NOTICE,
+            ScrapperType.COMPUTERSCIENCE_ACADEMIC_RSS,
+            ScrapperType.SOFTWARECENTERED_ACADEMIC,
         ],
     )
 
-    BUSINESS_CATEGORY = ("경영대학", [ScrapperType.BIZ_ALL_NOTICE_RSS])
+    BUSINESSADMINISTRATION_CATEGORY = (
+        "경영대학",
+        [
+            ScrapperType.BUSINESSADMINISTRATION_ACADEMIC_RSS,
+        ],
+    )
 
-    ARCHITECTURE_CATEGORY = ("건축대학", [ScrapperType.ARCHI_ALL_NOTICE])
+    ARCHITECTURE_CATEGORY = (
+        "건축대학",
+        [
+            ScrapperType.ARCHITECTURE_ACADEMIC,
+        ],
+    )
 
-    SOCIAL_SCIENCE_CATEGORY = ("사회과학대학", [ScrapperType.CMS_ACADEMIC_NOTICE])
+    SOCIALSCIENCE_CATEGORY = (
+        "사회과학대학",
+        [
+            ScrapperType.SOCIALSCIENCE_PUBLICADMINISTRATION_ACADEMIC,
+        ],
+    )
 
-    CREATIVE_ENGINEERING_CATEGORY = (
+    CREATIVEENGINEERING_CATEGORY = (
         "창의공과대학",
         [
-            ScrapperType.ME_ACADEMIC_NOTICE,
-            ScrapperType.EE_ACADEMIC_NOTICE_RSS,
+            ScrapperType.CREATIVEENGINEERING_MECHANICAL_ACADEMIC,
+            ScrapperType.CREATIVEENGINEERING_ELECTRICAL_ACADEMIC_RSS,
         ],
     )
 
     DESIGN_CATEGORY = (
         "조형대학",
         [
-            ScrapperType.ID_ACADEMIC_NOTICE,
-            ScrapperType.VCD_ACADEMIC_NOTICE,
-            ScrapperType.MCRAFT_ACADEMIC_NOTICE,
+            ScrapperType.DESIGN_INDUSTRIAL_ACADEMIC,
+            ScrapperType.DESIGN_VISUAL_ACADEMIC,
+            ScrapperType.DESIGN_METALWORK_ACADEMIC,
         ],
     )
 
-    OTHERS_CATEGORY = ("사업단 및 부속기관", [ScrapperType.LINC_NOTICE])
+    OTHERS_CATEGORY = (
+        "사업단 및 부속기관",
+        [
+            ScrapperType.LINC_ACADEMIC,
+        ],
+    )
 
-    CAR_CATEGORY = (
+    AUTOMOTIVEENGINEERING_CATEGORY = (
         "자동차융합대학",
         [
-            ScrapperType.AUTO_ACADEMIC_NOTICE,
+            ScrapperType.AUTOMATIVEENGINEERING_ACADEMIC,
         ],
     )
 

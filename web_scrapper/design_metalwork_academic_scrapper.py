@@ -8,11 +8,11 @@ from config.logger_config import setup_logger
 logger = setup_logger(__name__)
 
 
-class McraftAcademicNoticeScrapper(WebScrapper):
+class DesignMetalworkAcademicScrapper(WebScrapper):
     """금속공예학과 학사공지 스크래퍼"""
 
     def __init__(self, url: str):
-        super().__init__(url, ScrapperType.MCRAFT_ACADEMIC_NOTICE)
+        super().__init__(url, ScrapperType.DESIGN_METALWORK_ACADEMIC)
 
     def get_list_elements(self, soup: BeautifulSoup) -> list:
         """공지사항 목록의 HTML 요소들을 가져옵니다."""

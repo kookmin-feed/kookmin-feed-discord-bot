@@ -10,11 +10,11 @@ from config.db_config import get_collection
 logger = setup_logger(__name__)
 
 
-class AcademicNoticeScrapper(WebScrapper):
+class UniversityAcademicScrapper(WebScrapper):
     """대학 학사공지 스크래퍼"""
 
     def __init__(self, url: str):
-        super().__init__(url, ScrapperType.CS_ACADEMIC_NOTICE)
+        super().__init__(url, ScrapperType.UNIVERSITY_ACADEMIC)
 
     def get_list_elements(self, soup: BeautifulSoup) -> list:
         """학사공지 목록의 HTML 요소들을 가져옵니다."""
