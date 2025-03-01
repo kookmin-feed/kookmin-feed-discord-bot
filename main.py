@@ -28,7 +28,7 @@ async def process_new_notices(notices, scrapper_type: ScrapperType):
         # DB에 저장
         await save_notice(notice, scrapper_type)
         # 디스코드로 전송
-        await send_notice(notice, scrapper_type)
+        # await send_notice(notice, scrapper_type)
 
 
 def is_working_hour():
