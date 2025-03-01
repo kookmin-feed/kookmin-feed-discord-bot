@@ -29,10 +29,7 @@ class WebScrapper(ABC):
             recent_notices = list(collection.find(sort=[("published", -1)]).limit(50))
 
             # 제목으로 비교하기 위한 set
-            recent_titles = {notice["title"] for notice in recent_notices}
-
-            # 오늘 날짜 가져오기
-            today = datetime.now(self.kst).date()
+            recent_links = {notice["link"] for notice in recent_notices}
 
             # 웹페이지 가져오기
             async with aiohttp.ClientSession() as session:
@@ -51,7 +48,7 @@ class WebScrapper(ABC):
 
                     # 오늘 작성된 공지사항이고, DB에 없는 새로운 공지사항인 경우
 
-                    if notice.title not in recent_titles:
+                    if notice.link not in recent_links:
                         self.logger.debug("=> 새로운 공지사항입니다!")
                         new_notices.append(notice)
                     else:
