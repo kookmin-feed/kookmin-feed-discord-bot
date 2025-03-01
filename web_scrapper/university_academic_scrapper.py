@@ -5,7 +5,6 @@ from template.notice_data import NoticeData
 from utils.scrapper_type import ScrapperType
 from utils.web_scrapper import WebScrapper
 from config.logger_config import setup_logger
-from config.db_config import get_collection
 
 logger = setup_logger(__name__)
 

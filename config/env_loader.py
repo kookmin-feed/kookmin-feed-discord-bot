@@ -20,7 +20,7 @@ def is_ubuntu() -> bool:
 
 
 def load_env_file():
-    """환경에 따라 적절한 .env 파일을 로드합니다."""
+    """환경에 따라 적절한 .env 파일을 로드하고 환경 설정을 반환합니다."""
     # 프로젝트 루트 디렉토리 경로
     root_dir = Path(__file__).parent.parent
 
@@ -31,6 +31,16 @@ def load_env_file():
 
     if env_file.exists():
         load_dotenv(env_file)
-        return is_prod
+        return {
+            "IS_PROD": is_prod,
+            "MONGODB_URI": os.getenv("MONGODB_URI"),
+            "DB_NAME": os.getenv("DB_NAME"),
+            "DISCORD_TOKEN": os.getenv("DISCORD_TOKEN"),
+            # 필요한 다른 환경 변수들도 여기에 추가
+        }
     else:
         raise FileNotFoundError("환경 변수 파일이 존재하지 않습니다!")
+
+
+# 환경 설정을 전역 변수로 로드
+ENV = load_env_file()
