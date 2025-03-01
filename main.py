@@ -1,6 +1,5 @@
 import asyncio
 import sys
-import os
 from datetime import datetime
 import pytz
 from discord_bot.discord_bot import client, send_notice
@@ -9,12 +8,10 @@ from discord.ext import tasks
 from config.logger_config import setup_logger
 from config.db_config import get_database, close_database, save_notice
 from utils.scrapper_factory import ScrapperFactory
-from datetime import datetime
-import pytz
-from config.db_config import IS_PROD
+from config.env_loader import ENV
 
 
-if IS_PROD:
+if ENV["IS_PROD"]:
     INTERVAL = 10
 else:
     INTERVAL = 2
@@ -28,12 +25,12 @@ async def process_new_notices(notices, scrapper_type: ScrapperType):
         # DB에 저장
         await save_notice(notice, scrapper_type)
         # 디스코드로 전송
-        await send_notice(notice, scrapper_type)
+        # await send_notice(notice, scrapper_type)
 
 
 def is_working_hour():
     """현재 시간이 작동 시간(월~토 8시~20시)인지 확인합니다."""
-    if not IS_PROD:
+    if not ENV["IS_PROD"]:
         return True
 
     now = datetime.now(pytz.timezone("Asia/Seoul"))
@@ -94,7 +91,7 @@ async def main():
 
     try:
         # 환경 변수 검증
-        discord_token = os.getenv("DISCORD_TOKEN")
+        discord_token = ENV["DISCORD_TOKEN"]
         if not discord_token:
             raise ValueError(
                 "DISCORD_TOKEN이 설정되지 않았습니다. .env 파일을 확인해주세요."

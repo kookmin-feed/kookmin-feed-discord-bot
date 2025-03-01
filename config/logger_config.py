@@ -1,10 +1,8 @@
 import logging
 import sys
-from config.env_loader import load_env_file
-import os
-from config.db_config import IS_PROD
+from config.env_loader import ENV
 
-environment = "DEV" if not IS_PROD else "PROD"  # 기본값은 DEV
+environment = "DEV" if not ENV["IS_PROD"] else "PROD"  # 기본값은 DEV
 
 
 def setup_logger(name: str) -> logging.Logger:
