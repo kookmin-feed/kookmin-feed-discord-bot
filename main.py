@@ -9,6 +9,7 @@ from config.logger_config import setup_logger
 from config.db_config import get_database, close_database, save_notice
 from utils.scrapper_factory import ScrapperFactory
 from config.env_loader import ENV
+from utils.check_new_scrapper import run_check_new_scrapper
 
 
 if ENV["IS_PROD"]:
@@ -25,7 +26,7 @@ async def process_new_notices(notices, scrapper_type: ScrapperType):
         # DB에 저장
         await save_notice(notice, scrapper_type)
         # 디스코드로 전송
-        # await send_notice(notice, scrapper_type)
+        await send_notice(notice, scrapper_type)
 
 
 def is_working_hour():
@@ -100,6 +101,9 @@ async def main():
         # MongoDB 연결 초기화
         db = get_database()
         logger.info("MongoDB 연결이 성공적으로 설정되었습니다.")
+
+        # 새로운 스크롤러 확인 실행
+        await run_check_new_scrapper()
 
         # 크롤링 태스크 시작
         check_all_notices.start()
