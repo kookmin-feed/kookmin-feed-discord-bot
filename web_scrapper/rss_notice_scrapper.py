@@ -44,7 +44,7 @@ class RSSNoticeScrapper(WebScrapper):
             # DB에서 해당 스크래퍼 타입의 최신 공지사항 가져오기
             collection = get_collection(self.scrapper_type.get_collection_name())
             recent_notices = list(collection.find(sort=[("published", -1)]).limit(20))
-            # 제목으로 비교하기 위한 set
+            # 링크로 비교하기 위한 set
             recent_links = {notice["link"] for notice in recent_notices}
 
             # RSS 피드 파싱

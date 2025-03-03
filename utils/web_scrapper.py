@@ -24,7 +24,7 @@ class WebScrapper(ABC):
     async def check_updates(self) -> List[NoticeData]:
         """웹페이지를 확인하여 새로운 공지사항이 있으면 반환합니다."""
         try:
-            # DB에서 해당 크롤러 타입의 최신 공지사항 가져오기
+            # DB에서 해당 스크래퍼 타입의 최신 공지사항 가져오기
             collection = get_collection(self.scrapper_type.get_collection_name())
             recent_notices = list(collection.find(sort=[("published", -1)]).limit(50))
 

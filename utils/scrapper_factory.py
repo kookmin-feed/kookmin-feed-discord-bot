@@ -3,7 +3,7 @@ import os
 import importlib
 from utils.scrapper_type import ScrapperType
 from utils.web_scrapper import WebScrapper
-from utils.rss_notice_scrapper import RSSNoticeScrapper
+from web_scrapper.rss_notice_scrapper import RSSNoticeScrapper
 import sys
 from pathlib import Path
 
