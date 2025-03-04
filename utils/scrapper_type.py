@@ -114,6 +114,12 @@ class ScrapperType(Enum):
         "https://auto.kookmin.ac.kr/board/notice/?&pn=0",
         "AutomativeengineeringAcademicScrapper",
     )
+    CREATIVEENGINEERING_ADVANCEDMATERIALS_ACADEMIC = (
+        "creativeengineering_advancedmaterials_academic",
+        "신소재공학부 학사공지",
+        "https://cms.kookmin.ac.kr/mse/bbs/notice.do",
+        "CreativeengineeringAdvancedmaterialsAcademicScrapper",
+    )
 
     def get_collection_name(self) -> str:
         """MongoDB 컬렉션 이름을 반환합니다."""
