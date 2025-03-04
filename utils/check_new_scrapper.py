@@ -1,5 +1,3 @@
-import asyncio
-from typing import List
 from config.logger_config import setup_logger
 from config.db_config import get_database
 from utils.scrapper_type import ScrapperType
