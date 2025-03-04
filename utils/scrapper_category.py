@@ -48,6 +48,7 @@ class ScrapperCategory(Enum):
         [
             ScrapperType.CREATIVEENGINEERING_MECHANICAL_ACADEMIC,
             ScrapperType.CREATIVEENGINEERING_ELECTRICAL_ACADEMIC_RSS,
+            ScrapperType.CREATIVEENGINEERING_ADVANCEDMATERIALS_ACADEMIC,
         ],
     )
 
