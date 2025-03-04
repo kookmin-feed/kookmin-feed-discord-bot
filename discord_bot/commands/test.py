@@ -5,7 +5,7 @@ from template.notice_data import NoticeData
 from datetime import datetime
 from config.db_config import get_database, save_notice
 from config.logger_config import setup_logger
-from utils.rss_notice_scrapper import RSSNoticeScrapper
+from web_scrapper.rss_notice_scrapper import RSSNoticeScrapper
 import feedparser
 import aiohttp
 from bs4 import BeautifulSoup
