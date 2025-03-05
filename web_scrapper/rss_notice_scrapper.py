@@ -43,9 +43,11 @@ class RSSNoticeScrapper(WebScrapper):
         try:
             # DB에서 해당 스크래퍼 타입의 최신 공지사항 가져오기
             collection = get_collection(self.scrapper_type.get_collection_name())
-            recent_notices = list(collection.find(sort=[("published", -1)]).limit(20))
-            # 링크로 비교하기 위한 set
+            recent_notices = list(collection.find(sort=[("published", -1)]))
+
+            # 링크와 제목으로 비교하기 위한 set
             recent_links = {notice["link"] for notice in recent_notices}
+            recent_titles = {notice["title"] for notice in recent_notices}
 
             # RSS 피드 파싱
             feed = feedparser.parse(self.url)
@@ -61,11 +63,11 @@ class RSSNoticeScrapper(WebScrapper):
 
                 self.logger.debug(f"[크롤링된 공지] {notice.title}")
 
-                if notice.link not in recent_links:
+                if notice.link in recent_links or notice.title in recent_titles:
+                    self.logger.debug("=> 이미 등록된 공지사항입니다")
+                else:
                     self.logger.debug("=> 새로운 공지사항입니다!")
                     new_notices.append(notice)
-                else:
-                    self.logger.debug("=> 이미 등록된 공지사항입니다")
 
             self.logger.info(f"총 {len(new_notices)}개의 새로운 공지사항")
             return new_notices
