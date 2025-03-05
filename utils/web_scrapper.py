@@ -3,7 +3,6 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 import aiohttp
 from bs4 import BeautifulSoup
-from datetime import datetime
 import pytz
 from template.notice_data import NoticeData
 from config.db_config import get_collection
@@ -26,10 +25,11 @@ class WebScrapper(ABC):
         try:
             # DB에서 해당 스크래퍼 타입의 최신 공지사항 가져오기
             collection = get_collection(self.scrapper_type.get_collection_name())
-            recent_notices = list(collection.find(sort=[("published", -1)]).limit(50))
+            recent_notices = list(collection.find(sort=[("published", -1)]))
 
-            # 제목으로 비교하기 위한 set
+            # 링크와 제목으로 비교하기 위한 set
             recent_links = {notice["link"] for notice in recent_notices}
+            recent_titles = {notice["title"] for notice in recent_notices}
 
             # 웹페이지 가져오기
             async with aiohttp.ClientSession() as session:
@@ -46,15 +46,14 @@ class WebScrapper(ABC):
                 if notice:
                     self.logger.debug(f"[크롤링된 공지] {notice.title}")
 
-                    # 오늘 작성된 공지사항이고, DB에 없는 새로운 공지사항인 경우
-
-                    if notice.link not in recent_links:
+                    if notice.link in recent_links or notice.title in recent_titles:
+                        self.logger.debug("=> 이미 등록된 공지사항입니다")
+                    else:
                         self.logger.debug("=> 새로운 공지사항입니다!")
                         new_notices.append(notice)
-                    else:
-                        self.logger.debug("=> 이미 등록된 공지사항입니다")
 
             self.logger.info(f"총 {len(new_notices)}개의 새로운 공지사항")
+
             return new_notices
 
         except Exception as e:
