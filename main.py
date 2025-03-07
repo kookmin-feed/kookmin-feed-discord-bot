@@ -3,13 +3,13 @@ import sys
 from datetime import datetime
 import pytz
 from discord_bot.discord_bot import client, send_notice
-from utils.scrapper_type import ScrapperType
+from utils.scraper_type import ScraperType
 from discord.ext import tasks
 from config.logger_config import setup_logger
 from config.db_config import get_database, close_database, save_notice
-from utils.scrapper_factory import ScrapperFactory
+from utils.scraper_factory import ScraperFactory
 from config.env_loader import ENV
-from utils.check_new_scrapper import run_check_new_scrapper
+from utils.check_new_scraper import run_check_new_scraper
 
 
 if ENV["IS_PROD"]:
@@ -20,13 +20,13 @@ else:
 print(f"INTERVAL: {INTERVAL}")
 
 
-async def process_new_notices(notices, scrapper_type: ScrapperType):
+async def process_new_notices(notices, scraper_type: ScraperType):
     """새로운 공지사항을 처리합니다."""
     for notice in notices:
         # DB에 저장
-        await save_notice(notice, scrapper_type)
+        await save_notice(notice, scraper_type)
         # 디스코드로 전송
-        await send_notice(notice, scrapper_type)
+        await send_notice(notice, scraper_type)
 
 
 def is_working_hour():
@@ -59,21 +59,21 @@ async def check_all_notices():
             logger.info(f"작동 시간이 아닙니다. (현재 시각: {current_time})")
             return
         # 활성화된 모든 스크래퍼 실행
-        for scrapper_type in ScrapperType.get_active_scrappers():
+        for scraper_type in ScraperType.get_active_scrapers():
             try:
                 # 스크래퍼 생성
-                scrapper = ScrapperFactory().create_scrapper(scrapper_type)
-                if not scrapper:
-                    logger.error(f"지원하지 않는 스크래퍼 타입: {scrapper_type.name}")
+                scraper = ScraperFactory().create_scraper(scraper_type)
+                if not scraper:
+                    logger.error(f"지원하지 않는 스크래퍼 타입: {scraper_type.name}")
                     continue
 
                 # 공지사항 확인 및 처리
-                notices = await scrapper.check_updates()
-                await process_new_notices(notices, scrapper_type)
+                notices = await scraper.check_updates()
+                await process_new_notices(notices, scraper_type)
 
             except Exception as e:
                 logger.error(
-                    f"{scrapper_type.get_korean_name()} 스크래핑 중 오류 발생: {e}"
+                    f"{scraper_type.get_korean_name()} 스크래핑 중 오류 발생: {e}"
                 )
                 continue
 
@@ -103,7 +103,7 @@ async def main():
         logger.info("MongoDB 연결이 성공적으로 설정되었습니다.")
 
         # 새로운 스크롤러 확인 실행
-        await run_check_new_scrapper()
+        await run_check_new_scraper()
 
         # 크롤링 태스크 시작
         check_all_notices.start()

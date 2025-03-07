@@ -59,18 +59,18 @@ DB_NAME=your_database_name
 │   └── logger_config.py         # 로깅 설정
 ├── discord_bot/
 │   ├── discord_bot.py          # 디스코드 봇 코어
-│   ├── scrapper_config.py       # 스크래퍼 설정
+│   ├── scraper_config.py       # 스크래퍼 설정
 │   └── commands/               # 디스코드 명령어
 │       ├── register.py         # 공지 등록 명령어
 │       └── test.py             # 테스트 명령어
 ├── template/
 │   └── notice_data.py          # 공지사항 데이터 모델
 ├── utils/
-│   ├── scrapper_type.py        # 스크래퍼 타입 정의
-│   ├── scrapper_factory.py     # 스크래퍼 생성 팩토리
-│   ├── scrapper_category.py    # 스크래퍼 카테고리 정의
-│   ├── web_scrapper.py         # 웹 스크래퍼 슈퍼 클래스
-│   └── rss_notice_scrapper.py  # RSS 스크래퍼 클래스
+│   ├── scraper_type.py        # 스크래퍼 타입 정의
+│   ├── scraper_factory.py     # 스크래퍼 생성 팩토리
+│   ├── scraper_category.py    # 스크래퍼 카테고리 정의
+│   ├── web_scraper.py         # 웹 스크래퍼 슈퍼 클래스
+│   └── rss_notice_scraper.py  # RSS 스크래퍼 클래스
 └── main.py                     # 프로그램 진입점
 ```
 
@@ -83,7 +83,7 @@ DB_NAME=your_database_name
   - `title`: 공지사항 제목
   - `link`: 공지사항 링크
   - `published`: 작성일 (ISO 형식)
-  - `scrapper_type`: 스크래퍼 타입 식별자
+  - `scraper_type`: 스크래퍼 타입 식별자
 
 ## 개발 정보
 

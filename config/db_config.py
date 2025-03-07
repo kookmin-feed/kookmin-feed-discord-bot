@@ -1,7 +1,7 @@
 import logging
 from pymongo import MongoClient
 from template.notice_data import NoticeData
-from utils.scrapper_type import ScrapperType
+from utils.scraper_type import ScraperType
 from config.env_loader import ENV
 
 logger = logging.getLogger(__name__)
@@ -26,10 +26,10 @@ def get_database(db_name: str = None):
         raise
 
 
-def get_collection(scrapper_type: str, db_name: str = None):
+def get_collection(scraper_type: str, db_name: str = None):
     """공지사항 종류에 해당하는 컬렉션을 반환합니다."""
     db = get_database(db_name)
-    return db[scrapper_type]
+    return db[scraper_type]
 
 
 def close_database():
@@ -42,17 +42,17 @@ def close_database():
 
 
 async def save_notice(
-    notice: NoticeData, scrapper_type: ScrapperType, db_name: str = None
+    notice: NoticeData, scraper_type: ScraperType, db_name: str = None
 ):
     """공지사항을 DB에 저장합니다."""
     try:
-        collection = get_collection(scrapper_type.get_collection_name(), db_name)
+        collection = get_collection(scraper_type.get_collection_name(), db_name)
         collection.insert_one(
             {
                 "title": notice.title,
                 "link": notice.link,
                 "published": notice.published.isoformat(),
-                "scrapper_type": scrapper_type.get_collection_name(),
+                "scraper_type": scraper_type.get_collection_name(),
             }
         )
     except Exception as e:

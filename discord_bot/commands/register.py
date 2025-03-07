@@ -1,7 +1,7 @@
 import discord
-from utils.scrapper_type import ScrapperType
+from utils.scraper_type import ScraperType
 from config.logger_config import setup_logger
-from utils.scrapper_category import ScrapperCategory
+from utils.scraper_category import ScraperCategory
 
 logger = setup_logger(__name__)
 
@@ -18,7 +18,7 @@ class RegisterView(discord.ui.View):
         placeholder="게시판 카테고리를 선택하세요",
         options=[
             discord.SelectOption(label=choice["name"], value=choice["value"])
-            for choice in ScrapperCategory.get_category_choices()
+            for choice in ScraperCategory.get_category_choices()
         ],
     )
     async def select_category(
@@ -30,7 +30,7 @@ class RegisterView(discord.ui.View):
         selected_category = next(
             (
                 choice["name"]
-                for choice in ScrapperCategory.get_category_choices()
+                for choice in ScraperCategory.get_category_choices()
                 if choice["value"] == select.values[0]
             ),
             "알 수 없는 카테고리",
@@ -64,7 +64,7 @@ class RegisterView(discord.ui.View):
             return
 
         # 선택된 카테고리의 게시판 목록 가져오기
-        choices = ScrapperCategory.get_scrapper_choices(self.category)
+        choices = ScraperCategory.get_scraper_choices(self.category)
         self.select_board.options = [
             discord.SelectOption(label=choice["name"], value=choice["value"])
             for choice in choices
@@ -82,7 +82,7 @@ class RegisterView(discord.ui.View):
 
     async def register_notice(self, followup):
         try:
-            scrapper_type = ScrapperType.from_str(self.board)
+            scraper_type = ScraperType.from_str(self.board)
             if isinstance(self.interaction.channel, discord.DMChannel):
                 channel_id = str(self.interaction.user.id)
                 channel_name = self.interaction.user.name
@@ -100,31 +100,31 @@ class RegisterView(discord.ui.View):
                 channel_type = "server-channels"
                 guild_name = self.interaction.guild.name  # 서버 이름 가져오기
 
-            if self.interaction.client.scrapper_config.add_scrapper(
+            if self.interaction.client.scraper_config.add_scraper(
                 channel_id,
                 channel_name,
                 channel_type,
-                scrapper_type,
+                scraper_type,
                 guild_name,
             ):
                 # 등록 성공 시 '완료' 메시지로 변경
                 await self.interaction.edit_original_response(content="✅ 완료")
                 await followup.send(
-                    content=f"이 {channel_type}을(를) {scrapper_type.get_korean_name()} 알림을 받을 채널로 등록했습니다."
+                    content=f"이 {channel_type}을(를) {scraper_type.get_korean_name()} 알림을 받을 채널로 등록했습니다."
                 )
                 if channel_type == "server-channels":
                     logger.info(
-                        f"서버 채널에서 등록: 채널 ID - {channel_id} | 서버 이름 - {guild_name} | 채널 이름 - {channel_name} | 스크래퍼 타입 - {scrapper_type.get_korean_name()}"
+                        f"서버 채널에서 등록: 채널 ID - {channel_id} | 서버 이름 - {guild_name} | 채널 이름 - {channel_name} | 스크래퍼 타입 - {scraper_type.get_korean_name()}"
                     )
                 else:
                     logger.info(
-                        f"DM에서 등록: 사용자 ID - {channel_id} | 사용자 이름 - {channel_name} | 스크래퍼 타입 - {scrapper_type.get_korean_name()}"
+                        f"DM에서 등록: 사용자 ID - {channel_id} | 사용자 이름 - {channel_name} | 스크래퍼 타입 - {scraper_type.get_korean_name()}"
                     )
             else:
                 # 이미 등록된 경우
                 await self.interaction.edit_original_response(content="❗ 실패")
                 await followup.send(
-                    content=f"이미 이 {channel_type}은(는) {scrapper_type.get_korean_name()} 알림을 받도록 등록되어 있습니다."
+                    content=f"이미 이 {channel_type}은(는) {scraper_type.get_korean_name()} 알림을 받도록 등록되어 있습니다."
                 )
         except Exception as e:
             logger.error(f"알림 등록 중 오류 발생: {e}")
@@ -186,11 +186,11 @@ async def setup(bot):
             )
 
             # 등록된 스크래퍼 목록 가져오기
-            registered_scrappers = (
-                interaction.client.scrapper_config.get_channel_scrappers(channel_id)
+            registered_scrapers = (
+                interaction.client.scraper_config.get_channel_scrapers(channel_id)
             )
 
-            if not registered_scrappers:
+            if not registered_scrapers:
                 await interaction.response.send_message(
                     "현재 등록된 알림이 없습니다.", ephemeral=True
                 )
@@ -198,14 +198,14 @@ async def setup(bot):
 
             # 등록된 스크래퍼들의 카테고리 찾기
             registered_categories = set()
-            all_categories = ScrapperCategory.get_category_choices()
+            all_categories = ScraperCategory.get_category_choices()
 
             for category in all_categories:
-                category_scrappers = ScrapperCategory.get_scrapper_choices(
+                category_scrapers = ScraperCategory.get_scraper_choices(
                     category["value"]
                 )
-                for scrapper in category_scrappers:
-                    if scrapper["value"].lower() in registered_scrappers:
+                for scraper in category_scrapers:
+                    if scraper["value"].lower() in registered_scrapers:
                         registered_categories.add(category["value"])
                         break
 
@@ -255,13 +255,13 @@ async def setup(bot):
                     category_select.placeholder = selected_category_name
 
                     # 선택된 카테고리의 게시판 중 등록된 것만 필터링
-                    category_scrappers = ScrapperCategory.get_scrapper_choices(
+                    category_scrapers = ScraperCategory.get_scraper_choices(
                         selected_category
                     )
                     registered_boards = [
-                        scrapper
-                        for scrapper in category_scrappers
-                        if scrapper["value"].lower() in registered_scrappers
+                        scraper
+                        for scraper in category_scrapers
+                        if scraper["value"].lower() in registered_scrapers
                     ]
 
                     # 게시판 선택 옵션 업데이트
@@ -283,22 +283,22 @@ async def setup(bot):
             async def board_callback(interaction: discord.Interaction):
                 try:
                     selected_board = board_select.values[0]
-                    scrapper_type = ScrapperType.from_str(selected_board)
+                    scraper_type = ScraperType.from_str(selected_board)
 
-                    if interaction.client.scrapper_config.remove_scrapper(
-                        channel_id, channel_type, scrapper_type
+                    if interaction.client.scraper_config.remove_scraper(
+                        channel_id, channel_type, scraper_type
                     ):
-                        message = f"✅ 이 {channel_type}에서 {scrapper_type.get_korean_name()} 알림이 삭제되었습니다."
+                        message = f"✅ 이 {channel_type}에서 {scraper_type.get_korean_name()} 알림이 삭제되었습니다."
                         if channel_type == "server-channels":
                             logger.info(
-                                f"서버 채널에서 삭제: 채널 ID - {channel_id} | 서버 이름 - {interaction.guild.name} | 채널 이름 - {interaction.channel.name} | 스크래퍼 타입 - {scrapper_type.get_korean_name()}"
+                                f"서버 채널에서 삭제: 채널 ID - {channel_id} | 서버 이름 - {interaction.guild.name} | 채널 이름 - {interaction.channel.name} | 스크래퍼 타입 - {scraper_type.get_korean_name()}"
                             )
                         else:
                             logger.info(
-                                f"DM에서 삭제: 사용자 ID - {channel_id} | 사용자 이름 - {interaction.user.name} | 스크래퍼 타입 - {scrapper_type.get_korean_name()}"
+                                f"DM에서 삭제: 사용자 ID - {channel_id} | 사용자 이름 - {interaction.user.name} | 스크래퍼 타입 - {scraper_type.get_korean_name()}"
                             )
                     else:
-                        message = f"❗ 이 {channel_type}에는 {scrapper_type.get_korean_name()} 알림이 등록되어 있지 않습니다."
+                        message = f"❗ 이 {channel_type}에는 {scraper_type.get_korean_name()} 알림이 등록되어 있지 않습니다."
 
                     await interaction.response.edit_message(content=message, view=None)
 
@@ -346,18 +346,18 @@ async def setup(bot):
                 guild_name = interaction.guild.name
 
             # 등록된 스크래퍼 목록 가져오기
-            scrapper_type_list = (
-                interaction.client.scrapper_config.get_channel_scrappers(channel_id)
+            scraper_type_list = interaction.client.scraper_config.get_channel_scrapers(
+                channel_id
             )
 
-            if scrapper_type_list:
+            if scraper_type_list:
                 # 등록된 스크래퍼 목록을 한글명으로 변환
-                scrapper_names = [
-                    f"- {ScrapperType.from_str(scrapper_type).get_korean_name()}"
-                    for scrapper_type in scrapper_type_list
+                scraper_names = [
+                    f"- {ScraperType.from_str(scraper_type).get_korean_name()}"
+                    for scraper_type in scraper_type_list
                 ]
                 message = f"**현재 {channel_type}에 등록된 알림:**\n" + "\n".join(
-                    scrapper_names
+                    scraper_names
                 )
             else:
                 message = f"현재 {channel_type}에 등록된 알림이 없습니다."
