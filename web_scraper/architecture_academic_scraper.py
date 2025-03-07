@@ -1,18 +1,18 @@
 from bs4 import BeautifulSoup
 from datetime import datetime
 from template.notice_data import NoticeData
-from utils.scrapper_type import ScrapperType
-from utils.web_scrapper import WebScrapper
+from utils.scraper_type import ScraperType
+from utils.web_scraper import WebScraper
 from config.logger_config import setup_logger
 
 logger = setup_logger(__name__)
 
 
-class ArchitectureAcademicScrapper(WebScrapper):
+class ArchitectureAcademicScraper(WebScraper):
     """건축대학 단과대공지 스크래퍼"""
 
     def __init__(self, url: str):
-        super().__init__(url, ScrapperType.ARCHITECTURE_ACADEMIC)
+        super().__init__(url, ScraperType.ARCHITECTURE_ACADEMIC)
 
     def get_list_elements(self, soup: BeautifulSoup) -> list:
         """건축대학 공지사항 목록의 HTML 요소들을 가져옵니다."""
@@ -49,7 +49,7 @@ class ArchitectureAcademicScrapper(WebScrapper):
                 title=title,
                 link=link,
                 published=published,
-                scrapper_type=self.scrapper_type,
+                scraper_type=self.scraper_type,
             )
         except Exception as e:
             logger.error(f"공지사항 파싱 중 오류: {e}")

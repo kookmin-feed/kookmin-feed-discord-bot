@@ -2,19 +2,19 @@ import re
 from datetime import datetime
 from bs4 import BeautifulSoup
 from template.notice_data import NoticeData
-from utils.scrapper_type import ScrapperType
-from utils.web_scrapper import WebScrapper
+from utils.scraper_type import ScraperType
+from utils.web_scraper import WebScraper
 from config.logger_config import setup_logger
 
 logger = setup_logger(__name__)
 
 
-class CreativeengineeringAdvancedmaterialsAcademicScrapper(WebScrapper):
+class CreativeengineeringAdvancedmaterialsAcademicScraper(WebScraper):
     """신소재공학부 학사공지 스크래퍼"""
 
     def __init__(self, url: str):
         super().__init__(
-            url, ScrapperType.CREATIVEENGINEERING_ADVANCEDMATERIALS_ACADEMIC
+            url, ScraperType.CREATIVEENGINEERING_ADVANCEDMATERIALS_ACADEMIC
         )
 
     def get_list_elements(self, soup: BeautifulSoup) -> list:
@@ -63,7 +63,7 @@ class CreativeengineeringAdvancedmaterialsAcademicScrapper(WebScrapper):
             if is_top_notice:
                 logger.info(f"상단 고정 공지 파싱 완료: {title}")
 
-            return NoticeData(title, link, published, self.scrapper_type)
+            return NoticeData(title, link, published, self.scraper_type)
 
         except Exception as e:
             logger.error(f"공지사항 파싱 중 오류: {e}")

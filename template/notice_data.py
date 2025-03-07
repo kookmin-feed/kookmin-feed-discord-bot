@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from utils.scrapper_type import ScrapperType
+from utils.scraper_type import ScraperType
 
 
 @dataclass
@@ -10,12 +10,12 @@ class NoticeData:
     title: str
     link: str
     published: datetime
-    scrapper_type: ScrapperType
+    scraper_type: ScraperType
 
     def __str__(self):
         return (
             f"\n제목: {self.title}\n"
-            f"구분: {self.scrapper_type.get_korean_name()}\n"
+            f"구분: {self.scraper_type.get_korean_name()}\n"
             f"작성일: {self.published.strftime('%Y-%m-%d %H:%M:%S')}\n"
             f"링크: {self.link}\n"
             f"{'-' * 80}"

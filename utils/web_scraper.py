@@ -7,24 +7,24 @@ import pytz
 from template.notice_data import NoticeData
 from config.db_config import get_collection
 from config.logger_config import setup_logger
-from utils.scrapper_type import ScrapperType
+from utils.scraper_type import ScraperType
 from typing import List
 
 
-class WebScrapper(ABC):
+class WebScraper(ABC):
     """웹 스크래퍼 추상 클래스"""
 
-    def __init__(self, url: str, scrapper_type: ScrapperType):
+    def __init__(self, url: str, scraper_type: ScraperType):
         self.url = url
-        self.scrapper_type = scrapper_type
+        self.scraper_type = scraper_type
         self.kst = pytz.timezone("Asia/Seoul")
-        self.logger = setup_logger(self.scrapper_type.get_collection_name())
+        self.logger = setup_logger(self.scraper_type.get_collection_name())
 
     async def check_updates(self) -> List[NoticeData]:
         """웹페이지를 확인하여 새로운 공지사항이 있으면 반환합니다."""
         try:
             # DB에서 해당 스크래퍼 타입의 최신 공지사항 가져오기
-            collection = get_collection(self.scrapper_type.get_collection_name())
+            collection = get_collection(self.scraper_type.get_collection_name())
             recent_notices = list(collection.find(sort=[("published", -1)]))
 
             # 링크와 제목으로 비교하기 위한 set
