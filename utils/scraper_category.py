@@ -11,6 +11,7 @@ class ScraperCategory(Enum):
         [
             ScraperType.UNIVERSITY_ACADEMIC,
             ScraperType.UNIVERSITY_SCHOLARSHIP,
+            ScraperType.UNIVERSITY_SPECIALLECTURE,
         ],
     )
 
