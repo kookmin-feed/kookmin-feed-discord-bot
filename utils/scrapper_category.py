@@ -75,6 +75,13 @@ class ScrapperCategory(Enum):
         ],
     )
 
+    LAW_CATEGORY = (
+        "법과대학",
+        [
+            ScrapperType.LAW_ACADEMIC,
+        ],
+    )
+
     def __init__(self, korean_name: str, scrapper_types: List[ScrapperType]):
         self.korean_name = korean_name
         self.scrapper_types = scrapper_types
