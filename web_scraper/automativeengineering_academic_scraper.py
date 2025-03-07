@@ -1,15 +1,15 @@
 from bs4 import BeautifulSoup, Tag
-from utils.web_scrapper import WebScrapper
+from utils.web_scraper import WebScraper
 from template.notice_data import NoticeData
-from utils.scrapper_type import ScrapperType
+from utils.scraper_type import ScraperType
 from datetime import datetime
 
 
-class AutomativeengineeringAcademicScrapper(WebScrapper):
+class AutomativeengineeringAcademicScraper(WebScraper):
     """자동차융합대학 학사공지 스크래퍼"""
 
     def __init__(self, url: str):
-        super().__init__(url, ScrapperType.AUTOMATIVEENGINEERING_ACADEMIC)
+        super().__init__(url, ScraperType.AUTOMATIVEENGINEERING_ACADEMIC)
 
     def get_list_elements(self, soup: BeautifulSoup) -> list[Tag]:
         """공지사항 목록의 각 요소를 가져옵니다."""
@@ -53,7 +53,7 @@ class AutomativeengineeringAcademicScrapper(WebScrapper):
                 title=title,
                 link=full_url,
                 published=date,
-                scrapper_type=self.scrapper_type,
+                scraper_type=self.scraper_type,
             )
 
         except Exception as e:

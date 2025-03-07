@@ -1,18 +1,18 @@
 from bs4 import BeautifulSoup
 from datetime import datetime
 from template.notice_data import NoticeData
-from utils.scrapper_type import ScrapperType
-from utils.web_scrapper import WebScrapper
+from utils.scraper_type import ScraperType
+from utils.web_scraper import WebScraper
 from config.logger_config import setup_logger
 
 logger = setup_logger(__name__)
 
 
-class UniversityScholarshipScrapper(WebScrapper):
+class UniversityScholarshipScraper(WebScraper):
     """대학 장학공지 스크래퍼"""
 
     def __init__(self, url: str):
-        super().__init__(url, ScrapperType.UNIVERSITY_SCHOLARSHIP)
+        super().__init__(url, ScraperType.UNIVERSITY_SCHOLARSHIP)
 
     def get_list_elements(self, soup: BeautifulSoup) -> list:
         """장학공지 목록의 HTML 요소들을 가져옵니다."""
@@ -58,7 +58,7 @@ class UniversityScholarshipScrapper(WebScrapper):
                 title=title,
                 link=link,
                 published=published,
-                scrapper_type=self.scrapper_type,
+                scraper_type=self.scraper_type,
             )
 
         except Exception as e:

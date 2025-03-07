@@ -1,25 +1,25 @@
 import feedparser
 from datetime import datetime
 from template.notice_data import NoticeData
-from utils.scrapper_type import ScrapperType
+from utils.scraper_type import ScraperType
 from config.db_config import get_collection
-from utils.web_scrapper import WebScrapper
+from utils.web_scraper import WebScraper
 from bs4 import BeautifulSoup
 from config.logger_config import setup_logger
 
 
-class RSSNoticeScrapper(WebScrapper):
+class RSSNoticeScraper(WebScraper):
     """RSS 피드 스크래퍼"""
 
-    def __init__(self, url: str, scrapper_type: ScrapperType):
+    def __init__(self, url: str, scraper_type: ScraperType):
         """RSS 피드 스크래퍼를 초기화합니다.
 
         Args:
             url (str): RSS 피드 URL
             scraper_type (ScraperType, optional): 스크래퍼 타입. 기본값은 SWACADEMIC
         """
-        super().__init__(url, scrapper_type)
-        self.logger = setup_logger(self.scrapper_type.get_collection_name())
+        super().__init__(url, scraper_type)
+        self.logger = setup_logger(self.scraper_type.get_collection_name())
 
     def parse_date(self, date_str):
         """날짜 문자열을 datetime 객체로 변환합니다."""
@@ -42,7 +42,7 @@ class RSSNoticeScrapper(WebScrapper):
         """RSS 피드를 확인하여 새로운 글이 있으면 반환합니다."""
         try:
             # DB에서 해당 스크래퍼 타입의 최신 공지사항 가져오기
-            collection = get_collection(self.scrapper_type.get_collection_name())
+            collection = get_collection(self.scraper_type.get_collection_name())
             recent_notices = list(collection.find(sort=[("published", -1)]))
 
             # 링크와 제목으로 비교하기 위한 set
@@ -58,7 +58,7 @@ class RSSNoticeScrapper(WebScrapper):
                     title=entry.title,
                     link=entry.link,
                     published=self.parse_date(entry.published),
-                    scrapper_type=self.scrapper_type,
+                    scraper_type=self.scraper_type,
                 )
 
                 self.logger.debug(f"[크롤링된 공지] {notice.title}")
