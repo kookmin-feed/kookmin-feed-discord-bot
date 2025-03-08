@@ -150,6 +150,24 @@ class ScraperType(Enum):
         "http://chem.kookmin.ac.kr/sub6/menu1.php",
         "SciencetechnologyChemistryAcademicScraper",
     )
+    CREATIVEENGINEERING_CIVIL_ACADEMIC = (
+        "creativeengineering_civil_academic",  # collection_name
+        "건설시스템공학부 학사공지",  # korean_name
+        "https://cms.kookmin.ac.kr/cee/bbs/notice.do",  # url
+        "CreativeengineeringCivilAcademicScraper",  # scraper_class_name
+    )
+    SCIENCETECHNOLOGY_SECURITY_ACADEMIC = (
+        "sciencetechnology_security_academic",  # collection_name
+        "정보보안암호수학과 학사공지",  # korean_name
+        "https://cns.kookmin.ac.kr/cns/notice/academic-notice.do",  # url
+        "SciencetechnologySecurityAcademicScraper",  # scraper_class_name
+    )
+    DESIGN_AUTOMOTIVE_ACADEMIC = (
+        "design_automotive_academic",  # collection_name
+        "자동차·운송디자인학과 학사공지",  # korean_name
+        "https://mobility.kookmin.ac.kr/mobility/etc-board/employment-information.do",  # url
+        "DesignAutomotiveAcademicScraper",  # scraper_class_name
+    )
 
     def get_collection_name(self) -> str:
         """MongoDB 컬렉션 이름을 반환합니다."""

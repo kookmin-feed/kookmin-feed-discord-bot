@@ -51,6 +51,7 @@ class ScraperCategory(Enum):
             ScraperType.CREATIVEENGINEERING_MECHANICAL_ACADEMIC,
             ScraperType.CREATIVEENGINEERING_ELECTRICAL_ACADEMIC_RSS,
             ScraperType.CREATIVEENGINEERING_ADVANCEDMATERIALS_ACADEMIC,
+            ScraperType.CREATIVEENGINEERING_CIVIL_ACADEMIC,
         ],
     )
 
@@ -60,6 +61,7 @@ class ScraperCategory(Enum):
             ScraperType.DESIGN_INDUSTRIAL_ACADEMIC,
             ScraperType.DESIGN_VISUAL_ACADEMIC,
             ScraperType.DESIGN_METALWORK_ACADEMIC,
+            ScraperType.DESIGN_AUTOMOTIVE_ACADEMIC,
         ],
     )
 
@@ -95,6 +97,7 @@ class ScraperCategory(Enum):
         "과학기술대학",
         [
             ScraperType.SCIENCETECHNOLOGY_CHEMISTRY_ACADEMIC,
+            ScraperType.SCIENCETECHNOLOGY_SECURITY_ACADEMIC,
         ],
     )
 
