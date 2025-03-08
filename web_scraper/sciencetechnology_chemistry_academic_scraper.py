@@ -35,7 +35,6 @@ class SciencetechnologyChemistryAcademicScraper(WebScraper):
             title_link = element.select_one("td ul li a.Board")
             if not title_link:
                 return None
-            print(title_link)
 
             title = title_link.text.strip()
             relative_link = title_link.get("href", "")

@@ -35,7 +35,6 @@ class WebScraper(ABC):
             soup = await self.fetch_page()
             if not soup:
                 return []
-            # print(soup)
             elements = self.get_list_elements(soup)
 
             new_notices = []
@@ -87,10 +86,8 @@ class WebScraper(ABC):
                     except UnicodeDecodeError:
                         try:
                             html_text = html.decode("euc-kr")
-                            # print("euc-kr", html_text)
                         except UnicodeDecodeError:
                             html_text = html.decode("cp949", errors="replace")
-                            # print("cp949", html_text)
 
                     return BeautifulSoup(html_text, "html.parser")
         except Exception as e:
