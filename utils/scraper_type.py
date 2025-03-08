@@ -168,6 +168,18 @@ class ScraperType(Enum):
         "https://mobility.kookmin.ac.kr/mobility/etc-board/employment-information.do",  # url
         "DesignAutomotiveAcademicScraper",  # scraper_class_name
     )
+    SOCIALSCIENCE_EDUCATION_ACADEMIC = (
+        "socialscience_education_academic",  # collection_name
+        "교육학과 학사공지",  # korean_name
+        "https://cms.kookmin.ac.kr/kmuedu/community/notice.do",  # url
+        "SocialscienceEducationAcademicScraper",  # scraper_class_name
+    )
+    SOCIALSCIENCE_POLITICALSCIENCE_ACADEMIC = (
+        "socialscience_politicalscience_academic",  # collection_name
+        "정치외교학과 학사공지",  # korean_name
+        "https://polisci.kookmin.ac.kr/polisci/etc-board/board02.do",  # url
+        "SocialsciencePoliticalscienceAcademicScraper",  # scraper_class_name
+    )
 
     def get_collection_name(self) -> str:
         """MongoDB 컬렉션 이름을 반환합니다."""
