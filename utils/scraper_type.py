@@ -138,6 +138,18 @@ class ScraperType(Enum):
         "https://www.kookmin.ac.kr/user/kmuNews/notice/9/index.do",
         "UniversityContesteventScraper",
     )
+    DORMITORY_GENERAL_RSS = (
+        "dormitory_general_rss",
+        "생활관 일반공지",
+        "https://dormitory.kookmin.ac.kr/notice/notice/rss",
+        "RSSNoticeScraper",
+    )
+    SCIENCETECHNOLOGY_CHEMISTRY_ACADEMIC = (
+        "sciencetechnology_chemistry_academic",
+        "응용화학부 학사공지",
+        "http://chem.kookmin.ac.kr/sub6/menu1.php",
+        "SciencetechnologyChemistryAcademicScraper",
+    )
 
     def get_collection_name(self) -> str:
         """MongoDB 컬렉션 이름을 반환합니다."""

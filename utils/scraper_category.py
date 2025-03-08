@@ -84,6 +84,20 @@ class ScraperCategory(Enum):
         ],
     )
 
+    DORMITORY_CATEGORY = (
+        "생활관",
+        [
+            ScraperType.DORMITORY_GENERAL_RSS,
+        ],
+    )
+
+    SCIENCETECHNOLOGY_CATEGORY = (
+        "과학기술대학",
+        [
+            ScraperType.SCIENCETECHNOLOGY_CHEMISTRY_ACADEMIC,
+        ],
+    )
+
     def __init__(self, korean_name: str, scraper_types: List[ScraperType]):
         self.korean_name = korean_name
         self.scraper_types = scraper_types
