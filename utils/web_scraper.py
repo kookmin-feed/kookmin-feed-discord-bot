@@ -31,13 +31,11 @@ class WebScraper(ABC):
             recent_links = {notice["link"] for notice in recent_notices}
             recent_titles = {notice["title"] for notice in recent_notices}
 
-            # 웹페이지 가져오기
-            async with aiohttp.ClientSession() as session:
-                async with session.get(self.url) as response:
-                    html = await response.text()
-
-            # HTML 파싱
-            soup = BeautifulSoup(html, "html.parser")
+            # 웹페이지 가져오기 (fetch_page 메서드 사용)
+            soup = await self.fetch_page()
+            if not soup:
+                return []
+            # print(soup)
             elements = self.get_list_elements(soup)
 
             new_notices = []
@@ -69,3 +67,32 @@ class WebScraper(ABC):
     def get_list_elements(self, soup: BeautifulSoup) -> list:
         """공지사항 목록의 HTML 요소들을 가져옵니다."""
         pass
+
+    async def fetch_page(self) -> BeautifulSoup:
+        """웹 페이지를 비동기적으로 가져와 BeautifulSoup 객체로 반환합니다."""
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(self.url) as response:
+                    if response.status != 200:
+                        self.logger.error(
+                            f"페이지 요청 실패: {self.url}, 상태 코드: {response.status}"
+                        )
+                        return None
+
+                    html = await response.read()
+
+                    # 인코딩 문제 해결: 먼저 UTF-8로 시도하고, 실패하면 EUC-KR 등으로 시도
+                    try:
+                        html_text = html.decode("utf-8")
+                    except UnicodeDecodeError:
+                        try:
+                            html_text = html.decode("euc-kr")
+                            # print("euc-kr", html_text)
+                        except UnicodeDecodeError:
+                            html_text = html.decode("cp949", errors="replace")
+                            # print("cp949", html_text)
+
+                    return BeautifulSoup(html_text, "html.parser")
+        except Exception as e:
+            self.logger.error(f"페이지 요청 중 오류: {e}")
+            return None
