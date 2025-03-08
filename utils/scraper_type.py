@@ -126,6 +126,30 @@ class ScraperType(Enum):
         "https://law.kookmin.ac.kr/law/etc-board/notice01.do",
         "LawAcademicScraper",
     )
+    UNIVERSITY_SPECIALLECTURE = (
+        "university_speciallecture",
+        "대학 특강공지",
+        "https://cs.kookmin.ac.kr/news/kookmin/special_lecture/",
+        "UniversitySpeciallectureScraper",
+    )
+    UNIVERSITY_CONTESTEVENT = (
+        "university_contestevent",
+        "대학 공모행사공지",
+        "https://www.kookmin.ac.kr/user/kmuNews/notice/9/index.do",
+        "UniversityContesteventScraper",
+    )
+    DORMITORY_GENERAL_RSS = (
+        "dormitory_general_rss",
+        "생활관 일반공지",
+        "https://dormitory.kookmin.ac.kr/notice/notice/rss",
+        "RSSNoticeScraper",
+    )
+    SCIENCETECHNOLOGY_CHEMISTRY_ACADEMIC = (
+        "sciencetechnology_chemistry_academic",
+        "응용화학부 학사공지",
+        "http://chem.kookmin.ac.kr/sub6/menu1.php",
+        "SciencetechnologyChemistryAcademicScraper",
+    )
 
     def get_collection_name(self) -> str:
         """MongoDB 컬렉션 이름을 반환합니다."""

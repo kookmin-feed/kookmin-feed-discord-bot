@@ -11,6 +11,8 @@ class ScraperCategory(Enum):
         [
             ScraperType.UNIVERSITY_ACADEMIC,
             ScraperType.UNIVERSITY_SCHOLARSHIP,
+            ScraperType.UNIVERSITY_SPECIALLECTURE,
+            ScraperType.UNIVERSITY_CONTESTEVENT,
         ],
     )
 
@@ -79,6 +81,20 @@ class ScraperCategory(Enum):
         "법과대학",
         [
             ScraperType.LAW_ACADEMIC,
+        ],
+    )
+
+    DORMITORY_CATEGORY = (
+        "생활관",
+        [
+            ScraperType.DORMITORY_GENERAL_RSS,
+        ],
+    )
+
+    SCIENCETECHNOLOGY_CATEGORY = (
+        "과학기술대학",
+        [
+            ScraperType.SCIENCETECHNOLOGY_CHEMISTRY_ACADEMIC,
         ],
     )
 

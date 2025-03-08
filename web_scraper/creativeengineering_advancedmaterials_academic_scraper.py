@@ -61,7 +61,7 @@ class CreativeengineeringAdvancedmaterialsAcademicScraper(WebScraper):
 
             # 공지 여부 로깅
             if is_top_notice:
-                logger.info(f"상단 고정 공지 파싱 완료: {title}")
+                logger.debug(f"상단 고정 공지 파싱 완료: {title}")
 
             return NoticeData(title, link, published, self.scraper_type)
 
