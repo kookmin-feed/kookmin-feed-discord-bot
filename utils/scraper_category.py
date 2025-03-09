@@ -67,6 +67,7 @@ class ScraperCategory(Enum):
             ScraperType.DESIGN_VISUAL_ACADEMIC,
             ScraperType.DESIGN_METALWORK_ACADEMIC,
             ScraperType.DESIGN_AUTOMOTIVE_ACADEMIC,
+            ScraperType.DESIGN_CERAMICS_ACADEMIC,
         ],
     )
 
