@@ -85,6 +85,7 @@ class ScraperCategory(Enum):
         "자동차융합대학",
         [
             ScraperType.AUTOMATIVEENGINEERING_ACADEMIC,
+            ScraperType.COSS_ACADEMIC,
         ],
     )
 
