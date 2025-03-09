@@ -46,6 +46,7 @@ class ScraperCategory(Enum):
             ScraperType.SOCIALSCIENCE_POLITICALSCIENCE_ACADEMIC,
             ScraperType.SOCIALSCIENCE_SOCIOLOGY_ACADEMIC,
             ScraperType.SOCIALSCIENCE_COMMUNICATION_MEDIA_ACADEMIC,
+            ScraperType.SOCIALSCIENCE_COMMUNICATION_ADVERTISING_ACADEMIC,
         ],
     )
 
