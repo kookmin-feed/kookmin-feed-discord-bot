@@ -246,6 +246,12 @@ class ScraperType(Enum):
         "https://social.kookmin.ac.kr/social/menu/social_notice.do",
         "SocialscienceAcademicScraper",
     )
+    GLOBALHUMANITIES_EURASIAN_ACADEMIC = (
+        "globalhumanities_eurasian_academic",
+        "러시아유라시아학과 학사공지",
+        "https://cms.kookmin.ac.kr/Russian-EurasianStudies/community/department-notice.do",
+        "GlobalhumanitiesEurasianAcademicScraper",
+    )
 
     def get_collection_name(self) -> str:
         """MongoDB 컬렉션 이름을 반환합니다."""
