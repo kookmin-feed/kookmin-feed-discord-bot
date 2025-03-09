@@ -66,7 +66,7 @@ class SciencetechnologySecurityAcademicScraper(WebScraper):
             # 로깅
             logger.debug(f"파싱된 공지사항: {title}")
             if is_notice:
-                logger.info(f"상단 고정 공지 파싱: {title}")
+                logger.debug(f"상단 고정 공지 파싱: {title}")
 
             return NoticeData(title, link, published, self.scraper_type)
 

@@ -41,9 +41,13 @@ class ScraperCategory(Enum):
     SOCIALSCIENCE_CATEGORY = (
         "사회과학대학",
         [
+            ScraperType.SOCIALSCIENCE_ACADEMIC,
             ScraperType.SOCIALSCIENCE_PUBLICADMINISTRATION_ACADEMIC,
             ScraperType.SOCIALSCIENCE_EDUCATION_ACADEMIC,
             ScraperType.SOCIALSCIENCE_POLITICALSCIENCE_ACADEMIC,
+            ScraperType.SOCIALSCIENCE_SOCIOLOGY_ACADEMIC,
+            ScraperType.SOCIALSCIENCE_COMMUNICATION_MEDIA_ACADEMIC,
+            ScraperType.SOCIALSCIENCE_COMMUNICATION_ADVERTISING_ACADEMIC,
         ],
     )
 
@@ -65,6 +69,7 @@ class ScraperCategory(Enum):
             ScraperType.DESIGN_VISUAL_ACADEMIC,
             ScraperType.DESIGN_METALWORK_ACADEMIC,
             ScraperType.DESIGN_AUTOMOTIVE_ACADEMIC,
+            ScraperType.DESIGN_CERAMICS_ACADEMIC,
         ],
     )
 
@@ -80,6 +85,8 @@ class ScraperCategory(Enum):
         "자동차융합대학",
         [
             ScraperType.AUTOMATIVEENGINEERING_ACADEMIC,
+            ScraperType.COSS_ACADEMIC,
+            ScraperType.FUTUREMOBILITY_ACADEMIC,
         ],
     )
 
@@ -116,6 +123,32 @@ class ScraperCategory(Enum):
         "교직과정부",
         [
             ScraperType.TEACHING_ACADEMIC_RSS,
+        ],
+    )
+
+    ARTS_CATEGORY = (
+        "예술대학",
+        [
+            ScraperType.ARTS_ACADEMIC,
+        ],
+    )
+
+    PHYSICALEDUCATION_CATEGORY = (
+        "체육대학",
+        [
+            ScraperType.PHYSICALEDUCATION_ACADEMIC,
+        ],
+    )
+
+    GLOBALHUMANITIES_CATEGORY = (
+        "글로벌인문지역대학",
+        [
+            ScraperType.GLOBALHUMANITIES_ACADEMIC_RSS,
+            ScraperType.GLOBALHUMANITIES_KOREAN_ACADEMIC_RSS,
+            ScraperType.GLOBALHUMANITIES_KOREANHISTORY_ACADEMIC_RSS,
+            ScraperType.GLOBALHUMANITIES_ENGLISH_ACADEMIC_RSS,
+            ScraperType.GLOBALHUMANITIES_CHINESE_ACADEMIC_RSS,
+            ScraperType.GLOBALHUMANITIES_EURASIAN_ACADEMIC,
         ],
     )
 

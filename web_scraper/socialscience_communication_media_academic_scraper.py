@@ -9,11 +9,11 @@ from config.logger_config import setup_logger
 logger = setup_logger(__name__)
 
 
-class SocialsciencePoliticalscienceAcademicScraper(WebScraper):
-    """정치외교학과 학사공지 스크래퍼"""
+class SocialscienceCommunicationMediaAcademicScraper(WebScraper):
+    """미디어전공 학사공지 스크래퍼"""
 
     def __init__(self, url: str):
-        super().__init__(url, ScraperType.SOCIALSCIENCE_POLITICALSCIENCE_ACADEMIC)
+        super().__init__(url, ScraperType.SOCIALSCIENCE_COMMUNICATION_MEDIA_ACADEMIC)
 
     def get_list_elements(self, soup: BeautifulSoup) -> list:
         """공지사항 목록을 가져옵니다."""
@@ -23,7 +23,7 @@ class SocialsciencePoliticalscienceAcademicScraper(WebScraper):
     async def parse_notice_from_element(self, element) -> NoticeData:
         """개별 공지사항 정보를 파싱합니다."""
         try:
-            # 상단 고정 공지 여부 확인 (공지 표시가 있는지 확인)
+            # 상단 고정 공지 여부 확인
             notice_box = element.select_one(".b-num-box")
             is_top_notice = notice_box and "num-notice" in notice_box.get("class", [])
 
@@ -33,7 +33,21 @@ class SocialsciencePoliticalscienceAcademicScraper(WebScraper):
                 logger.warning("제목 요소를 찾을 수 없습니다.")
                 return None
 
-            title = title_element.text.strip()
+            # 제목 텍스트 정리 - 불필요한 공백과 줄바꿈 제거
+            title = title_element.get_text(strip=True)
+            # 추가 정리: 연속된 공백을 하나로 치환
+            title = re.sub(r"\s+", " ", title).strip()
+
+            # "자세히 보기" 텍스트 제거
+            title = re.sub(r" 자세히 보기$", "", title)
+
+            # 만약 제목이 "..."로 끝나면 원본 title 속성 확인
+            if title.endswith("..."):
+                # title 속성에서 완전한 제목을 가져오려고 시도
+                full_title = title_element.get("title", "")
+                if full_title and "자세히 보기" in full_title:
+                    # title 속성에서 "자세히 보기" 부분 제거
+                    title = re.sub(r" 자세히 보기$", "", full_title)
 
             # 상단 고정 공지는 제목에 [공지] 표시 추가 (없는 경우에만)
             if is_top_notice and not title.startswith("[공지]"):
@@ -54,7 +68,7 @@ class SocialsciencePoliticalscienceAcademicScraper(WebScraper):
                 published = datetime.now()
             else:
                 date_text = date_element.text.strip()
-                # YY.MM.DD 형식 파싱 (예: 25.02.28)
+                # YY.MM.DD 형식 파싱 (예: 25.02.20)
                 date_match = re.search(r"(\d{2})\.(\d{2})\.(\d{2})", date_text)
                 if date_match:
                     year, month, day = date_match.groups()
@@ -65,10 +79,10 @@ class SocialsciencePoliticalscienceAcademicScraper(WebScraper):
                     logger.warning(f"날짜 형식 변환 실패: {date_text}")
                     published = datetime.now()
 
-            # NEW 표시 확인 (추가 기능)
-            is_new = bool(element.select_one(".b-new"))
-            if is_new:
-                logger.info(f"새 게시물 발견: {title}")
+            # 첨부 파일 여부 확인
+            has_attachment = bool(element.select_one(".b-file"))
+            if has_attachment:
+                logger.debug(f"첨부 파일이 있는 공지: {title}")
 
             # 로깅
             if is_top_notice:

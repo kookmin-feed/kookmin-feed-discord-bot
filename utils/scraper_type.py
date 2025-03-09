@@ -204,6 +204,99 @@ class ScraperType(Enum):
         "https://teaching.kookmin.ac.kr/introduce/notice/rss",
         "RSSNoticeScraper",
     )
+    SOCIALSCIENCE_SOCIOLOGY_ACADEMIC = (
+        "socialscience_sociology_academic",
+        "사회학과 학사공지",
+        "https://kmusoc.kookmin.ac.kr/kmusoc/etc-board/major_notice.do",
+        "SocialscienceSociologyAcademicScraper",
+    )
+    SOCIALSCIENCE_COMMUNICATION_MEDIA_ACADEMIC = (
+        "socialscience_communication_media_academic",
+        "미디어전공 학사공지",
+        "https://kmumedia.kookmin.ac.kr/kmumedia/community/major-notice.do",
+        "SocialscienceCommunicationMediaAcademicScraper",
+    )
+    ARTS_ACADEMIC = (
+        "arts_academic",
+        "예술대학 학사공지",
+        "https://art.kookmin.ac.kr/community/notice/",
+        "ArtsAcademicScraper",
+    )
+    PHYSICALEDUCATION_ACADEMIC = (
+        "physicaleducation_academic",
+        "체육대학 학사공지",
+        "https://sport.kookmin.ac.kr/sports/notice/notice01.do",
+        "PhysicaleducationAcademicScraper",
+    )
+    DESIGN_CERAMICS_ACADEMIC = (
+        "design_ceramics_academic",
+        "도자공예학과 학사공지",
+        "https://kmuceramics.com/news/",
+        "DesignCeramicsAcademicScraper",
+    )
+    SOCIALSCIENCE_COMMUNICATION_ADVERTISING_ACADEMIC = (
+        "socialscience_communication_advertising_academic",
+        "광고홍보학전공 학사공지",
+        "https://adpr.kookmin.ac.kr/adpr/menu/undergraduate-notice.do",
+        "SocialscienceCommunicationAdvertisingAcademicScraper",
+    )
+    SOCIALSCIENCE_ACADEMIC = (
+        "socialscience_academic",
+        "사회과학대학 학사공지",
+        "https://social.kookmin.ac.kr/social/menu/social_notice.do",
+        "SocialscienceAcademicScraper",
+    )
+    GLOBALHUMANITIES_EURASIAN_ACADEMIC = (
+        "globalhumanities_eurasian_academic",
+        "러시아유라시아학과 학사공지",
+        "https://cms.kookmin.ac.kr/Russian-EurasianStudies/community/department-notice.do",
+        "GlobalhumanitiesEurasianAcademicScraper",
+    )
+
+    GLOBALHUMANITIES_ACADEMIC_RSS = (
+        "globalhumanities_academic_rss",
+        "글로벌인문지역대학 학사공지",
+        "https://cha.kookmin.ac.kr/community/college/notice/rss",
+        "RSSNoticeScraper",
+    )
+    GLOBALHUMANITIES_KOREAN_ACADEMIC_RSS = (
+        "globalhumanities_korean_academic_rss",
+        "한국어문학부 학사공지",
+        "https://cha.kookmin.ac.kr/korea/korea_notice/rss",
+        "RSSNoticeScraper",
+    )
+    GLOBALHUMANITIES_ENGLISH_ACADEMIC_RSS = (
+        "globalhumanities_english_academic_rss",
+        "영어영문학부 학사공지",
+        "https://cha.kookmin.ac.kr/english/english_notice/rss",
+        "RSSNoticeScraper",
+    )
+    GLOBALHUMANITIES_CHINESE_ACADEMIC_RSS = (
+        "globalhumanities_chinese_academic_rss",
+        "중국어문학부 학사공지",
+        "https://cha.kookmin.ac.kr/china/china_notice/rss",
+        "RSSNoticeScraper",
+    )
+    GLOBALHUMANITIES_KOREANHISTORY_ACADEMIC_RSS = (
+        "globalhumanities_koreanhistory_academic_rss",
+        "한국역사학과 학사공지",
+        "https://cha.kookmin.ac.kr/history/history_notice/rss",
+        "RSSNoticeScraper",
+    )
+
+    COSS_ACADEMIC = (
+        "coss_academic",
+        "미래자동차사업단 학사공지",
+        "https://coss.kookmin.ac.kr/fvedu/community/notice.do",
+        "CossAcademicScraper",
+    )
+
+    FUTUREMOBILITY_ACADEMIC = (
+        "futuremobility_academic",
+        "미래모빌리티학과 학사공지",
+        "https://cms.kookmin.ac.kr/futuremobility/board/notice.do",
+        "FuturemobilityAcademicScraper",
+    )
 
     def get_collection_name(self) -> str:
         """MongoDB 컬렉션 이름을 반환합니다."""
