@@ -205,16 +205,16 @@ class ScraperType(Enum):
         "RSSNoticeScraper",
     )
     SOCIALSCIENCE_SOCIOLOGY_ACADEMIC = (
-        "socialscience_sociology_academic",  # collection_name
-        "사회학과 학사공지",  # korean_name
-        "https://kmusoc.kookmin.ac.kr/kmusoc/etc-board/major_notice.do",  # url
-        "SocialscienceSociologyAcademicScraper",  # scraper_class_name
+        "socialscience_sociology_academic",
+        "사회학과 학사공지",
+        "https://kmusoc.kookmin.ac.kr/kmusoc/etc-board/major_notice.do",
+        "SocialscienceSociologyAcademicScraper",
     )
     SOCIALSCIENCE_COMMUNICATION_MEDIA_ACADEMIC = (
-        "socialscience_communication_media_academic",  # collection_name
-        "미디어전공 학사공지",  # korean_name
-        "https://kmumedia.kookmin.ac.kr/kmumedia/community/major-notice.do",  # url
-        "SocialscienceCommunicationMediaAcademicScraper",  # scraper_class_name
+        "socialscience_communication_media_academic",
+        "미디어전공 학사공지",
+        "https://kmumedia.kookmin.ac.kr/kmumedia/community/major-notice.do",
+        "SocialscienceCommunicationMediaAcademicScraper",
     )
     ARTS_ACADEMIC = (
         "arts_academic",
@@ -285,17 +285,17 @@ class ScraperType(Enum):
     )
 
     COSS_ACADEMIC = (
-        "coss_academic",  # collection_name
-        "미래자동차사업단 학사공지",  # korean_name
-        "https://coss.kookmin.ac.kr/fvedu/community/notice.do",  # url
-        "CossAcademicScraper",  # scraper_class_name
+        "coss_academic",
+        "미래자동차사업단 학사공지",
+        "https://coss.kookmin.ac.kr/fvedu/community/notice.do",
+        "CossAcademicScraper",
     )
 
     FUTUREMOBILITY_ACADEMIC = (
-        "futuremobility_academic",  # collection_name
-        "미래모빌리티학과 학사공지",  # korean_name
-        "https://cms.kookmin.ac.kr/futuremobility/board/notice.do",  # url
-        "FuturemobilityAcademicScraper",  # scraper_class_name
+        "futuremobility_academic",
+        "미래모빌리티학과 학사공지",
+        "https://cms.kookmin.ac.kr/futuremobility/board/notice.do",
+        "FuturemobilityAcademicScraper",
     )
 
     def get_collection_name(self) -> str:
