@@ -128,6 +128,13 @@ class ScraperCategory(Enum):
         ],
     )
 
+    PHYSICALEDUCATION_CATEGORY = (
+        "체육대학",
+        [
+            ScraperType.PHYSICALEDUCATION_ACADEMIC,
+        ],
+    )
+
     def __init__(self, korean_name: str, scraper_types: List[ScraperType]):
         self.korean_name = korean_name
         self.scraper_types = scraper_types
