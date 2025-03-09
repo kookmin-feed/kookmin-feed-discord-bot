@@ -47,7 +47,7 @@ async def setup(bot):
         name="testscraper",
         description="[디버그] 선택한 채널/유저에게 테스트 공지사항을 전송합니다",
     )
-    @app_commands.choices(scraper=ScraperType.get_choices()[-25:][-25:])
+    @app_commands.choices(scraper=ScraperType.get_choices()[-25:])
     async def test_scraper(interaction: discord.Interaction, scraper: str):
         """[디버그] 선택한 채널/유저에게 테스트 공지사항을 전송합니다."""
         try:
