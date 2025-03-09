@@ -81,7 +81,7 @@ class DesignAutomotiveAcademicScraper(WebScraper):
 
             # 로깅
             if is_top_notice:
-                logger.info(f"상단 고정 공지 파싱 완료: {title}")
+                logger.debug(f"상단 고정 공지 파싱 완료: {title}")
             else:
                 logger.debug(f"일반 공지 파싱 완료: {title}")
 
