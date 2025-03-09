@@ -291,6 +291,13 @@ class ScraperType(Enum):
         "CossAcademicScraper",  # scraper_class_name
     )
 
+    FUTUREMOBILITY_ACADEMIC = (
+        "futuremobility_academic",  # collection_name
+        "미래모빌리티학과 학사공지",  # korean_name
+        "https://cms.kookmin.ac.kr/futuremobility/board/notice.do",  # url
+        "FuturemobilityAcademicScraper",  # scraper_class_name
+    )
+
     def get_collection_name(self) -> str:
         """MongoDB 컬렉션 이름을 반환합니다."""
         return self.value[0]

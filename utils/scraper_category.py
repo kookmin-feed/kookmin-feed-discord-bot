@@ -86,6 +86,7 @@ class ScraperCategory(Enum):
         [
             ScraperType.AUTOMATIVEENGINEERING_ACADEMIC,
             ScraperType.COSS_ACADEMIC,
+            ScraperType.FUTUREMOBILITY_ACADEMIC,
         ],
     )
 
