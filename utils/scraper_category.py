@@ -41,6 +41,7 @@ class ScraperCategory(Enum):
     SOCIALSCIENCE_CATEGORY = (
         "사회과학대학",
         [
+            ScraperType.SOCIALSCIENCE_ACADEMIC,
             ScraperType.SOCIALSCIENCE_PUBLICADMINISTRATION_ACADEMIC,
             ScraperType.SOCIALSCIENCE_EDUCATION_ACADEMIC,
             ScraperType.SOCIALSCIENCE_POLITICALSCIENCE_ACADEMIC,
