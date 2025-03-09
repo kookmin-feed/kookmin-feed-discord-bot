@@ -252,6 +252,7 @@ class ScraperType(Enum):
         "https://cms.kookmin.ac.kr/Russian-EurasianStudies/community/department-notice.do",
         "GlobalhumanitiesEurasianAcademicScraper",
     )
+
     GLOBALHUMANITIES_ACADEMIC_RSS = (
         "globalhumanities_academic_rss",
         "글로벌인문지역대학 학사공지",
@@ -281,6 +282,20 @@ class ScraperType(Enum):
         "한국역사학과 학사공지",
         "https://cha.kookmin.ac.kr/history/history_notice/rss",
         "RSSNoticeScraper",
+    )
+
+    COSS_ACADEMIC = (
+        "coss_academic",  # collection_name
+        "미래자동차사업단 학사공지",  # korean_name
+        "https://coss.kookmin.ac.kr/fvedu/community/notice.do",  # url
+        "CossAcademicScraper",  # scraper_class_name
+    )
+
+    FUTUREMOBILITY_ACADEMIC = (
+        "futuremobility_academic",  # collection_name
+        "미래모빌리티학과 학사공지",  # korean_name
+        "https://cms.kookmin.ac.kr/futuremobility/board/notice.do",  # url
+        "FuturemobilityAcademicScraper",  # scraper_class_name
     )
 
     def get_collection_name(self) -> str:
