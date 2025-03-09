@@ -278,7 +278,7 @@ class ScraperType(Enum):
     )
     GLOBALHUMANITIES_KOREANHISTORY_ACADEMIC_RSS = (
         "globalhumanities_koreanhistory_academic_rss",
-        "한국사학과 학사공지",
+        "한국역사학과 학사공지",
         "https://cha.kookmin.ac.kr/history/history_notice/rss",
         "RSSNoticeScraper",
     )
