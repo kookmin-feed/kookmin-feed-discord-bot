@@ -150,6 +150,60 @@ class ScraperType(Enum):
         "http://chem.kookmin.ac.kr/sub6/menu1.php",
         "SciencetechnologyChemistryAcademicScraper",
     )
+    CREATIVEENGINEERING_CIVIL_ACADEMIC = (
+        "creativeengineering_civil_academic",
+        "건설시스템공학부 학사공지",
+        "https://cms.kookmin.ac.kr/cee/bbs/notice.do",
+        "CreativeengineeringCivilAcademicScraper",
+    )
+    SCIENCETECHNOLOGY_SECURITY_ACADEMIC = (
+        "sciencetechnology_security_academic",
+        "정보보안암호수학과 학사공지",
+        "https://cns.kookmin.ac.kr/cns/notice/academic-notice.do",
+        "SciencetechnologySecurityAcademicScraper",
+    )
+    DESIGN_AUTOMOTIVE_ACADEMIC = (
+        "design_automotive_academic",
+        "자동차·운송디자인학과 학사공지",
+        "https://mobility.kookmin.ac.kr/mobility/etc-board/employment-information.do",
+        "DesignAutomotiveAcademicScraper",
+    )
+    SOCIALSCIENCE_EDUCATION_ACADEMIC = (
+        "socialscience_education_academic",
+        "교육학과 학사공지",
+        "https://cms.kookmin.ac.kr/kmuedu/community/notice.do",
+        "SocialscienceEducationAcademicScraper",
+    )
+    SOCIALSCIENCE_POLITICALSCIENCE_ACADEMIC = (
+        "socialscience_politicalscience_academic",
+        "정치외교학과 학사공지",
+        "https://polisci.kookmin.ac.kr/polisci/etc-board/board02.do",
+        "SocialsciencePoliticalscienceAcademicScraper",
+    )
+    ECONOMICCOMMERCE_ACADEMIC_RSS = (
+        "economiccommerce_academic_rss",
+        "경상대학 학사공지",
+        "https://kyungsang.kookmin.ac.kr/community/board/notice/rss",
+        "RSSNoticeScraper",
+    )
+    CREATIVEENGINEERING_ACADEMIC_RSS = (
+        "creativeengineering_academic_rss",
+        "창의공과대학 학사공지",
+        "https://engineering.kookmin.ac.kr/board/engineering_notice/rss",
+        "RSSNoticeScraper",
+    )
+    CULTURE_ACADEMIC_RSS = (
+        "culture_academic_rss",
+        "교양대학 학사공지",
+        "https://culture.kookmin.ac.kr/community/notice/rss",
+        "RSSNoticeScraper",
+    )
+    TEACHING_ACADEMIC_RSS = (
+        "teaching_academic_rss",
+        "교직과정부 학사공지",
+        "https://teaching.kookmin.ac.kr/introduce/notice/rss",
+        "RSSNoticeScraper",
+    )
 
     def get_collection_name(self) -> str:
         """MongoDB 컬렉션 이름을 반환합니다."""

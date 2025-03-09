@@ -42,15 +42,19 @@ class ScraperCategory(Enum):
         "사회과학대학",
         [
             ScraperType.SOCIALSCIENCE_PUBLICADMINISTRATION_ACADEMIC,
+            ScraperType.SOCIALSCIENCE_EDUCATION_ACADEMIC,
+            ScraperType.SOCIALSCIENCE_POLITICALSCIENCE_ACADEMIC,
         ],
     )
 
     CREATIVEENGINEERING_CATEGORY = (
         "창의공과대학",
         [
+            ScraperType.CREATIVEENGINEERING_ACADEMIC_RSS,
             ScraperType.CREATIVEENGINEERING_MECHANICAL_ACADEMIC,
             ScraperType.CREATIVEENGINEERING_ELECTRICAL_ACADEMIC_RSS,
             ScraperType.CREATIVEENGINEERING_ADVANCEDMATERIALS_ACADEMIC,
+            ScraperType.CREATIVEENGINEERING_CIVIL_ACADEMIC,
         ],
     )
 
@@ -60,6 +64,7 @@ class ScraperCategory(Enum):
             ScraperType.DESIGN_INDUSTRIAL_ACADEMIC,
             ScraperType.DESIGN_VISUAL_ACADEMIC,
             ScraperType.DESIGN_METALWORK_ACADEMIC,
+            ScraperType.DESIGN_AUTOMOTIVE_ACADEMIC,
         ],
     )
 
@@ -67,6 +72,7 @@ class ScraperCategory(Enum):
         "사업단 및 부속기관",
         [
             ScraperType.LINC_ACADEMIC,
+            ScraperType.DORMITORY_GENERAL_RSS,
         ],
     )
 
@@ -84,17 +90,32 @@ class ScraperCategory(Enum):
         ],
     )
 
-    DORMITORY_CATEGORY = (
-        "생활관",
-        [
-            ScraperType.DORMITORY_GENERAL_RSS,
-        ],
-    )
-
     SCIENCETECHNOLOGY_CATEGORY = (
         "과학기술대학",
         [
             ScraperType.SCIENCETECHNOLOGY_CHEMISTRY_ACADEMIC,
+            ScraperType.SCIENCETECHNOLOGY_SECURITY_ACADEMIC,
+        ],
+    )
+
+    ECONOMICCOMMERCE_CATEGORY = (
+        "경상대학",
+        [
+            ScraperType.ECONOMICCOMMERCE_ACADEMIC_RSS,
+        ],
+    )
+
+    CULTURE_CATEGORY = (
+        "교양대학",
+        [
+            ScraperType.CULTURE_ACADEMIC_RSS,
+        ],
+    )
+
+    TEACHING_CATEGORY = (
+        "교직과정부",
+        [
+            ScraperType.TEACHING_ACADEMIC_RSS,
         ],
     )
 
