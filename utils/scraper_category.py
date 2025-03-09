@@ -141,6 +141,11 @@ class ScraperCategory(Enum):
     GLOBALHUMANITIES_CATEGORY = (
         "글로벌인문지역대학",
         [
+            ScraperType.GLOBALHUMANITIES_ACADEMIC_RSS,
+            ScraperType.GLOBALHUMANITIES_KOREAN_ACADEMIC_RSS,
+            ScraperType.GLOBALHUMANITIES_KOREANHISTORY_ACADEMIC_RSS,
+            ScraperType.GLOBALHUMANITIES_ENGLISH_ACADEMIC_RSS,
+            ScraperType.GLOBALHUMANITIES_CHINESE_ACADEMIC_RSS,
             ScraperType.GLOBALHUMANITIES_EURASIAN_ACADEMIC,
         ],
     )

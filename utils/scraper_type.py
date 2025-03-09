@@ -252,6 +252,36 @@ class ScraperType(Enum):
         "https://cms.kookmin.ac.kr/Russian-EurasianStudies/community/department-notice.do",
         "GlobalhumanitiesEurasianAcademicScraper",
     )
+    GLOBALHUMANITIES_ACADEMIC_RSS = (
+        "globalhumanities_academic_rss",
+        "글로벌인문지역대학 학사공지",
+        "https://cha.kookmin.ac.kr/community/college/notice/rss",
+        "RSSNoticeScraper",
+    )
+    GLOBALHUMANITIES_KOREAN_ACADEMIC_RSS = (
+        "globalhumanities_korean_academic_rss",
+        "한국어문학부 학사공지",
+        "https://cha.kookmin.ac.kr/korea/korea_notice/rss",
+        "RSSNoticeScraper",
+    )
+    GLOBALHUMANITIES_ENGLISH_ACADEMIC_RSS = (
+        "globalhumanities_english_academic_rss",
+        "영어영문학부 학사공지",
+        "https://cha.kookmin.ac.kr/english/english_notice/rss",
+        "RSSNoticeScraper",
+    )
+    GLOBALHUMANITIES_CHINESE_ACADEMIC_RSS = (
+        "globalhumanities_chinese_academic_rss",
+        "중국어문학부 학사공지",
+        "https://cha.kookmin.ac.kr/china/china_notice/rss",
+        "RSSNoticeScraper",
+    )
+    GLOBALHUMANITIES_KOREANHISTORY_ACADEMIC_RSS = (
+        "globalhumanities_koreanhistory_academic_rss",
+        "한국사학과 학사공지",
+        "https://cha.kookmin.ac.kr/history/history_notice/rss",
+        "RSSNoticeScraper",
+    )
 
     def get_collection_name(self) -> str:
         """MongoDB 컬렉션 이름을 반환합니다."""
