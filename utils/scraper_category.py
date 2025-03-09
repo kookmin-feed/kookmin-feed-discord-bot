@@ -121,6 +121,13 @@ class ScraperCategory(Enum):
         ],
     )
 
+    ARTS_CATEGORY = (
+        "예술대학",
+        [
+            ScraperType.ARTS_ACADEMIC,
+        ],
+    )
+
     def __init__(self, korean_name: str, scraper_types: List[ScraperType]):
         self.korean_name = korean_name
         self.scraper_types = scraper_types
