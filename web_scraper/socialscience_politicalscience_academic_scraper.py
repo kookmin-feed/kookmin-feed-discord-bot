@@ -65,11 +65,6 @@ class SocialsciencePoliticalscienceAcademicScraper(WebScraper):
                     logger.warning(f"날짜 형식 변환 실패: {date_text}")
                     published = datetime.now()
 
-            # NEW 표시 확인 (추가 기능)
-            is_new = bool(element.select_one(".b-new"))
-            if is_new:
-                logger.info(f"새 게시물 발견: {title}")
-
             # 로깅
             if is_top_notice:
                 logger.debug(f"상단 고정 공지 파싱: {title}")
