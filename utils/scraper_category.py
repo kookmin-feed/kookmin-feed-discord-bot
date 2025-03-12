@@ -78,6 +78,7 @@ class ScraperCategory(Enum):
         [
             ScraperType.LINC_ACADEMIC,
             ScraperType.DORMITORY_GENERAL_RSS,
+            ScraperType.NCCOSS_GENERAL,
         ],
     )
 
