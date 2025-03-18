@@ -298,6 +298,13 @@ class ScraperType(Enum):
         "FuturemobilityAcademicScraper",
     )
 
+    NCCOSS_GENERAL = (
+        "nccoss_general",
+        "차세대통신사업단 학사공지",
+        "https://nccoss.kookmin.ac.kr/NCCOSS/community/notice.do",
+        "NccossGeneralScraper",
+    )
+
     def get_collection_name(self) -> str:
         """MongoDB 컬렉션 이름을 반환합니다."""
         return self.value[0]
