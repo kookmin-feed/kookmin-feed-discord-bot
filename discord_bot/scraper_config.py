@@ -1,7 +1,7 @@
 from typing import List
-from config.db_config import get_database
 from config.logger_config import setup_logger
-from utils.scraper_type import ScraperType
+from template.scraper_type import ScraperType
+from utils.discord_data_api import *
 
 logger = setup_logger(__name__)
 
@@ -10,31 +10,27 @@ class ScraperConfig:
     """스크래퍼 설정을 관리하는 클래스"""
 
     def __init__(self):
-        self.db = get_database(db_name="notification-recipient")
-        self.dm_collection = self.db["direct-messages"]
-        self.server_channel_collection = self.db["server-channels"]
+        pass
 
-    def get_channels_for_scraper(self, scraper_type: ScraperType) -> list:
+    async def get_channels_for_scraper(self, scraper_type: ScraperType) -> list:
         """특정 스크래퍼에 등록된 채널 목록을 반환합니다."""
         channels = []
 
         # DM 채널 검색
-        dm_cursor = self.db["direct-messages"].find(
-            {"scrapers": scraper_type.get_collection_name()}
-        )
-        for doc in dm_cursor:
-            channels.append(doc["_id"])
+        dm_channels = await get_all_direct_messages()
+        for dm in dm_channels:
+            if scraper_type.collection_name in dm["scrapers"]:
+                channels.append(dm["_id"])
 
         # 서버 채널 검색
-        server_cursor = self.db["server-channels"].find(
-            {"scrapers": scraper_type.get_collection_name()}
-        )
-        for doc in server_cursor:
-            channels.append(doc["_id"])
+        server_channels = await get_all_server_channels()
+        for server in server_channels:
+            if scraper_type.collection_name in server["scrapers"]:
+                channels.append(server["_id"])
 
         return channels
 
-    def add_scraper(
+    async def add_scraper(
         self,
         channel_id: str,
         channel_name: str,
@@ -43,52 +39,52 @@ class ScraperConfig:
         guild_name: str = None,
     ) -> bool:
         """채널에 스크래퍼를 등록합니다."""
+        scraper_name = scraper_type.collection_name
+
         if channel_type == "direct-messages":
-            self.collection = self.db["direct-messages"]
+            existing_dm = await get_direct_message(user_id=channel_id)
+            if existing_dm:
+                return await update_direct_message(user_id=channel_id, scrapers=existing_dm["scrapers"] + [scraper_name])
+            else:
+                return await create_direct_message(user_id=channel_id, user_name=channel_name, scrapers=[scraper_name])
         else:
-            self.collection = self.db["server-channels"]
+            existing_server = await get_server_channel(channel_id=channel_id)
+            if existing_server:
+                return await update_server_channel(channel_id=channel_id, scrapers=existing_server["scrapers"] + [scraper_name])
+            else:
+                return await create_server_channel(
+                    guild_name=guild_name, channel_name=channel_name, channel_id=channel_id, scrapers=[scraper_name]
+                )
 
-        update_data = {
-            "user_name": channel_name,
-            "channel_type": channel_type,
-        }
-
-        # 서버 채널인 경우에만 guild_name 추가
-        if guild_name is not None:
-            update_data = {
-                "channel_name": channel_name,
-                "channel_type": channel_type,
-                "guild_name": guild_name,
-            }
-
-        result = self.collection.update_one(
-            {"_id": channel_id},
-            {
-                "$set": update_data,
-                "$addToSet": {"scrapers": scraper_type.get_collection_name()},
-            },
-            upsert=True,
-        )
-        return result.modified_count > 0 or result.upserted_id is not None
-
-    def remove_scraper(
+    async def remove_scraper(
         self, channel_id: str, channel_type: str, scraper_type: ScraperType
     ) -> bool:
         """채널에서 스크래퍼를 제거합니다."""
-        if channel_type == "direct-messages":
-            collection = self.dm_collection
-        else:
-            collection = self.server_channel_collection
-        result = collection.update_one(
-            {"_id": channel_id},
-            {"$pull": {"scrapers": scraper_type.get_collection_name()}},
-        )
-        return result.modified_count > 0
+        scraper_name = scraper_type.collection_name
 
-    def get_channel_scrapers(self, channel_id: str) -> List[str]:
+        if channel_type == "direct-messages":
+            existing_dm = await get_direct_message(user_id=channel_id)
+            if existing_dm:
+                updated_scrapers = [s for s in existing_dm["scrapers"] if s != scraper_name]
+                return await update_direct_message(user_id=channel_id, scrapers=updated_scrapers)
+        else:
+            existing_server = await get_server_channel(channel_id=channel_id)
+            if existing_server:
+                updated_scrapers = [s for s in existing_server["scrapers"] if s != scraper_name]
+                return await update_server_channel(channel_id=channel_id, scrapers=updated_scrapers)
+
+        return False
+
+    async def get_channel_scrapers(self, channel_id: str, channel_type: str) -> list[str]:
         """채널에 등록된 스크래퍼 목록을 반환합니다."""
-        channel = self.dm_collection.find_one({"_id": channel_id})
-        if channel:
-            return channel.get("scrapers", [])
-        channel = self.server_channel_collection.find_one({"_id": channel_id})
-        return channel.get("scrapers", []) if channel else []
+        if channel_type == "direct-messages":
+            existing_dm = await get_direct_message(user_id=channel_id)
+            if existing_dm:
+                return existing_dm["scrapers"]
+
+        else:
+            existing_server = await get_server_channel(channel_id=channel_id)
+            if existing_server:
+                return existing_server["scrapers"]
+
+        return []

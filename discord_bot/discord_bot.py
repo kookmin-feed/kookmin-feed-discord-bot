@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands
 from discord_bot.scraper_config import ScraperConfig
-from utils.scraper_type import ScraperType
+from template.scraper_type import ScraperType
 from template.notice_data import NoticeData
 from config.logger_config import setup_logger
 from config.env_loader import (
@@ -73,7 +73,7 @@ async def send_notice(notice: NoticeData, scraper_type: ScraperType):
     try:
         await client.wait_until_ready()
 
-        channels = client.scraper_config.get_channels_for_scraper(scraper_type)
+        channels = await client.scraper_config.get_channels_for_scraper(scraper_type)
         for channel_id in channels:
             try:
                 channel = client.get_channel(int(channel_id))
@@ -101,7 +101,7 @@ async def send_notice(notice: NoticeData, scraper_type: ScraperType):
 
                 # 공지사항 종류 표시
                 embed.add_field(
-                    name="구분", value=scraper_type.get_korean_name(), inline=True
+                    name="구분", value=scraper_type.korean_name, inline=True
                 )
 
                 if notice.published.year > 1970:
