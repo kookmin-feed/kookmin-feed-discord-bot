@@ -1,0 +1,2 @@
+class LastNoticeData:
+    links = {}
