@@ -3,13 +3,15 @@ import sys
 from datetime import datetime
 import pytz
 from discord_bot.discord_bot import client, send_notice
-from utils.scraper_type import ScraperType
 from discord.ext import tasks
 from config.logger_config import setup_logger
-from config.db_config import get_database, close_database, save_notice
-from utils.scraper_factory import ScraperFactory
 from config.env_loader import ENV
-from utils.check_new_scraper import run_check_new_scraper
+from utils.data_server_conect import get_data_from_server
+from utils.enum_data_api import *
+from utils.scraper_data_api import *
+from template.scraper_type_list import MetaData
+from utils.notice_cache import LastNoticeData
+from template.notice_data import NoticeData
 
 
 if ENV["IS_PROD"]:
@@ -18,16 +20,6 @@ else:
     INTERVAL = 2
 
 print(f"INTERVAL: {INTERVAL}")
-
-
-async def process_new_notices(notices, scraper_type: ScraperType):
-    """새로운 공지사항을 처리합니다."""
-    for notice in notices:
-        # DB에 저장
-        await save_notice(notice, scraper_type)
-        # 디스코드로 전송
-        await send_notice(notice, scraper_type)
-
 
 def is_working_hour():
     """현재 시간이 작동 시간(월~토 8시~20시)인지 확인합니다."""
@@ -48,8 +40,10 @@ def is_working_hour():
 
 
 @tasks.loop(minutes=INTERVAL)
-async def check_all_notices():
-    """모든 스크래퍼를 실행하고 새로운 공지사항을 처리합니다."""
+async def check_all_notice():
+    """새로운 ENUM이 있는지 확인합니다. 
+    새로운 공지가 있다면 메세지를 보냅니다."""
+    
     try:
         # 작동 시간이 아니면 스킵
         if not is_working_hour():
@@ -58,30 +52,43 @@ async def check_all_notices():
             )
             logger.info(f"작동 시간이 아닙니다. (현재 시각: {current_time})")
             return
-        # 활성화된 모든 스크래퍼 실행
-        for scraper_type in ScraperType.get_active_scrapers():
-            try:
-                # 스크래퍼 생성
-                scraper = ScraperFactory().create_scraper(scraper_type)
-                if not scraper:
-                    logger.error(f"지원하지 않는 스크래퍼 타입: {scraper_type.name}")
-                    continue
 
-                # 공지사항 확인 및 처리
-                notices = await scraper.check_updates()
-                await process_new_notices(notices, scraper_type)
+        logger.info("새로운 카테고리의 유무를 확인합니다...")
+        MetaData.category_list = await get_all_categories()
+        logger.info("새로운 스크래퍼 타입의 유무를 확인합니다...")
+        MetaData.scraper_type_list = await get_all_scraper_types()
+        
+        for scraper_type in MetaData.scraper_type_list:
+            type_name = scraper_type.collection_name
+            
+            # 최초 실행 또는 새로운 타입일 경우 메시지를 보내지 않고 최근 공지 캐싱
+            if LastNoticeData.links.get(type_name) == None:
+                logger.info(f"\"{scraper_type.name}\"의 캐시가 없습니다. 마지막 정보를 캐싱합니다.")
+                
+                last_notice = (await get_all_notices(type_name, 1))[0]
+                LastNoticeData.links[type_name] = last_notice.link
 
-            except Exception as e:
-                logger.error(
-                    f"{scraper_type.get_korean_name()} 스크래핑 중 오류 발생: {e}"
-                )
-                continue
+                logger.info(f"\"{scraper_type.name}\"의 마지막 게시물 \"{last_notice.title}\"를 캐싱했습니다.")
+            
+            # 캐싱한 마지막 공지 기준으로 새로운 공지 발견시 메시지 보내기
+            else:
+                logger.info(f"\"{scraper_type.name}\"의 새 게시물을 가져옵니다...")
+                new_notice_list = await get_new_notices(type_name, LastNoticeData.links[type_name])
+                
+                logger.info(f"\"{scraper_type.name}\"의 새 게시물은 {len(new_notice_list)}개 입니다.")
+                
+                for new_notice in reversed(new_notice_list):
+                    await send_notice(new_notice, scraper_type)
+
+                if len(new_notice_list) != 0:
+                    LastNoticeData.links[type_name] = new_notice_list[0].link
+                    logger.info(f"\"{scraper_type.name}\"의 마지막 게시물 \"{new_notice_list[0].title}\"를 캐싱했습니다.")
 
     except Exception as e:
-        logger.error(f"스크래핑 작업 중 오류 발생: {e}")
+        logger.error(f"API 호출 테스크 중 오류: {e}")
 
 
-@check_all_notices.before_loop
+@check_all_notice.before_loop
 async def before_check():
     """크롤링 시작 전 봇이 준비될 때까지 대기"""
     await client.wait_until_ready()
@@ -98,16 +105,21 @@ async def main():
                 "DISCORD_TOKEN이 설정되지 않았습니다. .env 파일을 확인해주세요."
             )
 
-        # MongoDB 연결 초기화
-        db = get_database()
-        logger.info("MongoDB 연결이 성공적으로 설정되었습니다.")
+        # data server connection 테스트
+        logger.info("Data Server 연결 상태를 검사합니다...")
+        await get_data_from_server(endpoint="connect-check")
 
-        # 새로운 스크롤러 확인 실행
-        await run_check_new_scraper()
+        logger.info("meta data를 초기화합니다.")
+        
+        MetaData.category_list = await get_all_categories()
+        logger.info("카테고리 meta data 초기화 완료.")
 
-        # 크롤링 태스크 시작
-        check_all_notices.start()
-        logger.info("크롤링 작업이 시작되었습니다.")
+        MetaData.scraper_type_list = await get_all_scraper_types()
+        logger.info("스크래퍼 타입 meta data를 초기화 완료.")
+
+        logger.info("kookmin-feed API 호출 테스크를 시작합니다...")
+        check_all_notice.start()
+        logger.info("kookmin-feed API 호출 테스크가 정상적으로 시작되었습니다.")
 
         logger.info("디스코드 봇을 시작합니다...")
         await client.start(discord_token)
@@ -120,9 +132,8 @@ async def main():
     except Exception as e:
         logger.error(f"오류 발생: {e}")
     finally:
-        check_all_notices.cancel()
+        check_all_notice.cancel()
         await client.close()
-        close_database()
         await asyncio.get_event_loop().shutdown_asyncgens()
 
 
