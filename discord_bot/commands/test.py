@@ -1,15 +1,15 @@
 from discord import app_commands
 import discord
-from utils.scraper_type import ScraperType
+from template.scraper_type import ScraperType
 from template.notice_data import NoticeData
 from datetime import datetime
-from config.db_config import get_database, save_notice
 from config.logger_config import setup_logger
-from web_scraper.rss_notice_scraper import RSSNoticeScraper
-import feedparser
-import aiohttp
-from bs4 import BeautifulSoup
-from utils.scraper_factory import ScraperFactory
+# from web_scraper.rss_notice_scraper import RSSNoticeScraper
+# from utils.scraper_factory import ScraperFactory
+from utils.data_server_conect import get_data_from_server
+from utils.discord_data_api import get_server_channel
+from utils.scraper_data_api import get_all_notices
+from template.scraper_type_list import MetaData
 
 logger = setup_logger(__name__)
 
@@ -22,12 +22,11 @@ async def setup(bot):
     )
     async def test(interaction: discord.Interaction):
         try:
-            # MongoDB 연결 테스트
-            db = get_database()
-            collection = db["scraper_config"]  # scraper_config -> scraper_config
+            # data server connection 테스트
+            get_data_from_server(endpoint="connect-check")
 
             # 채널 설정 확인
-            channel_config = collection.find_one({"_id": str(interaction.channel_id)})
+            channel_config = await get_server_channel(str(interaction.channel_id))
             if channel_config:
                 scrapers = channel_config.get("scrapers", [])  # scrapers -> scrapers
                 await interaction.response.send_message(
@@ -47,13 +46,18 @@ async def setup(bot):
         name="testscraper",
         description="[디버그] 선택한 채널/유저에게 테스트 공지사항을 전송합니다",
     )
-    @app_commands.choices(scraper=ScraperType.get_choices()[-25:])
+    @app_commands.choices(
+        scraper=[
+            app_commands.Choice(name=type_.korean_name, value=type_.name)
+            for type_ in MetaData.scraper_type_list[-25:]
+        ]
+    )
     async def test_scraper(interaction: discord.Interaction, scraper: str):
         """[디버그] 선택한 채널/유저에게 테스트 공지사항을 전송합니다."""
         try:
             await interaction.response.defer(ephemeral=True)
 
-            scraper_type = ScraperType.from_str(scraper)
+            scraper_type = MetaData.name_to_scraper_type(scraper)
             if not scraper_type:
                 await interaction.followup.send(
                     "올바르지 않은 스크래퍼 타입입니다.", ephemeral=True
@@ -61,7 +65,7 @@ async def setup(bot):
                 return
 
             # 등록된 채널/유저 목록 가져오기
-            channels = bot.scraper_config.get_channels_for_scraper(scraper_type)
+            channels = await bot.scraper_config.get_channels_for_scraper(scraper_type)
             if not channels:
                 await interaction.followup.send(
                     f"선택한 {scraper} 알림에 등록된 채널이 없습니다.", ephemeral=True
@@ -69,9 +73,7 @@ async def setup(bot):
                 return
 
             # DB에서 최신 스크랩 데이터 가져오기
-            db = get_database()
-            collection = db[scraper_type.get_collection_name()]
-            latest_scraper = collection.find_one(sort=[("published", -1)])
+            latest_scraper = await get_all_notices(scraper_type.collection_name, 1)
 
             if not latest_scraper:
                 await interaction.followup.send(
@@ -168,22 +170,27 @@ async def setup(bot):
         name="test-list",
         description="선택한 스크래퍼로 등록된 유저, 채널 목록을 확인합니다",
     )
-    @app_commands.choices(scraper=ScraperType.get_choices()[-25:])
+    @app_commands.choices(
+        scraper=[
+            app_commands.Choice(name=type_.korean_name, value=type_.name)
+            for type_ in MetaData.scraper_type_list[-25:]
+        ]
+    )
     async def list_registered(interaction: discord.Interaction, scraper: str):
         """선택한 스크래퍼로 등록된 유저, 채널 목록을 확인합니다."""
         try:
-            scraper_type = ScraperType.from_str(scraper)
+            scraper_type = MetaData.name_to_scraper_type(scraper)
             if not scraper_type:
                 await interaction.response.send_message(
                     "올바르지 않은 스크래퍼 타입입니다.", ephemeral=True
                 )
                 return
 
-            channels = bot.scraper_config.get_channels_for_scraper(scraper_type)
+            channels = await bot.scraper_config.get_channels_for_scraper(scraper_type)
 
             if not channels:
                 await interaction.response.send_message(
-                    f"선택한 {scraper_type.get_korean_name()} 알림에 등록된 채널이 없습니다.",
+                    f"선택한 {scraper_type.korean_name} 알림에 등록된 채널이 없습니다.",
                     ephemeral=True,
                 )
                 return
@@ -207,7 +214,7 @@ async def setup(bot):
                     logger.error(f"정보 조회 실패 (ID: {channel_id}): {e}")
 
             # 결과 메시지 생성
-            result_message = f"**{scraper_type.get_korean_name()} 알림 등록 목록:**\n"
+            result_message = f"**{scraper_type.korean_name} 알림 등록 목록:**\n"
             result_message += (
                 "\n".join(registered_items) if registered_items else "등록된 항목 없음"
             )
@@ -218,78 +225,4 @@ async def setup(bot):
             logger.error(f"목록 조회 중 오류 발생: {e}")
             await interaction.response.send_message(
                 "목록 조회 중 오류가 발생했습니다.", ephemeral=True
-            )
-
-    @bot.tree.command(
-        name="test-scrape",
-        description="[디버그] 선택한 스크래퍼로 데이터를 수집하고 DB에 저장합니다",
-    )
-    @app_commands.choices(scraper=ScraperType.get_choices()[-25:])
-    async def test_scrape(interaction: discord.Interaction, scraper: str):
-        """[디버그] 선택한 스크래퍼로 데이터를 수집하고 DB에 저장합니다."""
-        try:
-            await interaction.response.defer(ephemeral=True)
-
-            scraper_type = ScraperType.from_str(scraper)
-            if not scraper_type:
-                await interaction.followup.send(
-                    "올바르지 않은 스크래퍼 타입입니다.", ephemeral=True
-                )
-                return
-
-            # 스크래퍼 생성 - create_scraper() 대신 ScraperFactory 직접 사용
-            scraper = ScraperFactory().create_scraper(scraper_type)
-            if not scraper:
-                await interaction.followup.send(
-                    "지원하지 않는 스크래퍼 타입입니다.", ephemeral=True
-                )
-                return
-
-            # HTML 직접 파싱
-            async with aiohttp.ClientSession() as session:
-                async with session.get(scraper.url) as response:
-                    html = await response.text()
-
-            if isinstance(scraper, RSSNoticeScraper):
-                # RSS 피드 직접 파싱
-                feed = feedparser.parse(html)
-                if not feed.entries:
-                    raise Exception("RSS 피드에서 항목을 찾을 수 없습니다")
-
-                entry = feed.entries[0]
-                notice = NoticeData(
-                    title=entry.title,
-                    link=entry.link,
-                    published=scraper.parse_date(entry.published),
-                    scraper_type=scraper_type,
-                )
-            else:
-                # HTML 파싱
-                soup = BeautifulSoup(html, "html.parser")
-                elements = scraper.get_list_elements(soup)
-                if not elements:
-                    raise Exception("공지사항 목록을 찾을 수 없습니다")
-
-                notice = await scraper.parse_notice_from_element(elements[0])
-                if not notice:
-                    raise Exception("공지사항을 파싱할 수 없습니다")
-
-            # DB에 저장
-            await save_notice(notice, scraper_type)
-
-            # 결과 메시지 전송
-            await interaction.followup.send(
-                f"✅ 데이터 수집 및 저장 완료!\n\n"
-                f"스크래퍼: {scraper_type.get_korean_name()}\n"
-                f"저장된 공지사항:\n"
-                f"제목: {notice.title}\n"
-                f"작성일: {notice.published.strftime('%Y-%m-%d %H:%M:%S')}\n"
-                f"링크: {notice.link}",
-                ephemeral=True,
-            )
-
-        except Exception as e:
-            logger.error(f"테스트 스크랩 중 오류 발생: {e}")
-            await interaction.followup.send(
-                f"오류가 발생했습니다: {str(e)}", ephemeral=True
             )
