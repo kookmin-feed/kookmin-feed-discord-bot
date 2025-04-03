@@ -6,4 +6,4 @@ python-dotenv
 pymongo
 pytz
 feedparser
-python-dotenv
+requests
