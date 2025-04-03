@@ -33,10 +33,9 @@ def load_env_file():
         load_dotenv(env_file)
         return {
             "IS_PROD": is_prod,
-            "MONGODB_URI": os.getenv("MONGODB_URI"),
-            "DB_NAME": os.getenv("DB_NAME"),
             "DISCORD_TOKEN": os.getenv("DISCORD_TOKEN"),
-            "YOUTUBE_API_KEY": os.getenv("YOUTUBE_API_KEY"),
+            "DATA_SERVER_URL": os.getenv("DATA_SERVER_URL"),
+            "DATA_SERVER_API_KEY": os.getenv("DATA_SERVER_API_KEY"),
             # 필요한 다른 환경 변수들도 여기에 추가
         }
     else:
