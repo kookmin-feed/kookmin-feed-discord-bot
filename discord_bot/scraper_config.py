@@ -53,13 +53,13 @@ class ScraperConfig:
                     user_id=channel_id, user_name=channel_name, scrapers=[scraper_name]
                 )
         else:
-            try:
-                existing_server = await get_server_channel(channel_id=channel_id)
+            existing_server = await get_server_channel(channel_id=channel_id)
+            if existing_server:
                 return await update_server_channel(
                     channel_id=channel_id,
                     scrapers=existing_server["scrapers"] + [scraper_name],
                 )
-            except:
+            else:
                 return await create_server_channel(
                     guild_name=guild_name,
                     channel_name=channel_name,
