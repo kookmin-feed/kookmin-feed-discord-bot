@@ -13,7 +13,11 @@ async def create_direct_message(user_id: str, user_name: str, scrapers: list):
 async def get_direct_message(user_id: str):
     """특정 유저의 Direct Message(DM)를 조회합니다."""
     params = {"user_id": user_id}
-    return await request_to_server("GET", "discord/direct-message", params=params)
+    try: 
+        return await request_to_server("GET", "discord/direct-message", params=params)
+    except:
+        return None
+    
 
 async def update_direct_message(user_id: str, scrapers: list):
     """특정 유저의 Direct Message(DM)를 업데이트합니다."""
@@ -43,7 +47,10 @@ async def create_server_channel(guild_name: str, channel_id: str, channel_name: 
 async def get_server_channel(channel_id: str):
     """특정 서버 채널을 조회합니다."""
     params = {"channel_id": channel_id}
-    return await request_to_server("GET", "discord/server-channel", params=params)
+    try:
+        return await request_to_server("GET", "discord/server-channel", params=params)
+    except:
+        return None
 
 async def update_server_channel(channel_id: str, scrapers: list):
     """특정 서버 채널을 업데이트합니다."""
