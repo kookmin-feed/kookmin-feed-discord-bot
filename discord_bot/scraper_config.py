@@ -44,16 +44,27 @@ class ScraperConfig:
         if channel_type == "direct-messages":
             existing_dm = await get_direct_message(user_id=channel_id)
             if existing_dm:
-                return await update_direct_message(user_id=channel_id, scrapers=existing_dm["scrapers"] + [scraper_name])
+                return await update_direct_message(
+                    user_id=channel_id,
+                    scrapers=existing_dm["scrapers"] + [scraper_name],
+                )
             else:
-                return await create_direct_message(user_id=channel_id, user_name=channel_name, scrapers=[scraper_name])
+                return await create_direct_message(
+                    user_id=channel_id, user_name=channel_name, scrapers=[scraper_name]
+                )
         else:
-            existing_server = await get_server_channel(channel_id=channel_id)
-            if existing_server:
-                return await update_server_channel(channel_id=channel_id, scrapers=existing_server["scrapers"] + [scraper_name])
-            else:
+            try:
+                existing_server = await get_server_channel(channel_id=channel_id)
+                return await update_server_channel(
+                    channel_id=channel_id,
+                    scrapers=existing_server["scrapers"] + [scraper_name],
+                )
+            except:
                 return await create_server_channel(
-                    guild_name=guild_name, channel_name=channel_name, channel_id=channel_id, scrapers=[scraper_name]
+                    guild_name=guild_name,
+                    channel_name=channel_name,
+                    channel_id=channel_id,
+                    scrapers=[scraper_name],
                 )
 
     async def remove_scraper(
@@ -65,17 +76,27 @@ class ScraperConfig:
         if channel_type == "direct-messages":
             existing_dm = await get_direct_message(user_id=channel_id)
             if existing_dm:
-                updated_scrapers = [s for s in existing_dm["scrapers"] if s != scraper_name]
-                return await update_direct_message(user_id=channel_id, scrapers=updated_scrapers)
+                updated_scrapers = [
+                    s for s in existing_dm["scrapers"] if s != scraper_name
+                ]
+                return await update_direct_message(
+                    user_id=channel_id, scrapers=updated_scrapers
+                )
         else:
             existing_server = await get_server_channel(channel_id=channel_id)
             if existing_server:
-                updated_scrapers = [s for s in existing_server["scrapers"] if s != scraper_name]
-                return await update_server_channel(channel_id=channel_id, scrapers=updated_scrapers)
+                updated_scrapers = [
+                    s for s in existing_server["scrapers"] if s != scraper_name
+                ]
+                return await update_server_channel(
+                    channel_id=channel_id, scrapers=updated_scrapers
+                )
 
         return False
 
-    async def get_channel_scrapers(self, channel_id: str, channel_type: str) -> list[str]:
+    async def get_channel_scrapers(
+        self, channel_id: str, channel_type: str
+    ) -> list[str]:
         """채널에 등록된 스크래퍼 목록을 반환합니다."""
         if channel_type == "direct-messages":
             existing_dm = await get_direct_message(user_id=channel_id)

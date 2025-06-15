@@ -14,10 +14,12 @@ from utils.notice_cache import LastNoticeData
 from template.notice_data import NoticeData
 
 
-if ENV["IS_PROD"]:
-    INTERVAL = 10
-else:
-    INTERVAL = 2
+# if ENV["IS_PROD"]:
+#     INTERVAL = 10
+# else:
+#     INTERVAL = 2
+
+INTERVAL = 20
 
 print(f"INTERVAL: {INTERVAL}")
 

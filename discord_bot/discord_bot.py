@@ -7,6 +7,7 @@ from config.logger_config import setup_logger
 from config.env_loader import (
     ENV,
 )  # db_config에서 가져오는 대신 직접 env_loader에서 가져옴
+from utils.discord_data_api import create_server_channel
 
 logger = setup_logger(__name__)
 

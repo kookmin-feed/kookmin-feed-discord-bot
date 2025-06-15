@@ -15,8 +15,15 @@ async def request_to_server(method: str, endpoint: str, params: dict = None, dat
                     return await response.json()
                 else:
                     raise Exception(f"API 호출 실패: {response.status} - {await response.text()}")
-    except:
-        raise Exception(f"{method} 연결 실패: {url}")
+    except aiohttp.ClientError as e:
+        # 네트워크 연결 오류만 여기서 처리
+        raise Exception(f"{method} 연결 실패: {url} - {str(e)}")
+    except Exception as e:
+        if "API 호출 실패" in str(e):
+            raise
+        else:
+            # 예상치 못한 다른 예외
+            raise Exception(f"{method} 요청 중 오류: {url} - {str(e)}")
 
 async def get_data_from_server(endpoint: str, params: dict = None):
     """데이터 서버에 데이터를 GET 요청으로 전송합니다."""
