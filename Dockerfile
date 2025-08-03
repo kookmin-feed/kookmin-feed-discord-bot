@@ -1,7 +1,7 @@
-FROM python:3.10-slim
+FROM ghcr.io/astral-sh/uv:python3.10-alpine
 
 WORKDIR /app
 COPY . .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN uv sync --frozen
 
-CMD ["python", "main.py"]
+CMD ["uv", "run", "python", "main.py"]
