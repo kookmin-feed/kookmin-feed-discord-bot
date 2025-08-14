@@ -62,31 +62,36 @@ async def check_all_notice():
         for scraper_type in MetaData.scraper_type_list:
             type_name = scraper_type.collection_name
             
-            # 최초 실행 또는 새로운 타입일 경우 메시지를 보내지 않고 최근 공지 캐싱
-            if LastNoticeData.links.get(type_name) == None:
-                logger.info(f"\"{scraper_type.name}\"의 캐시가 없습니다. 마지막 정보를 캐싱합니다.")
-                
-                last_notice = (await get_all_notices(type_name, 1))[0]
-                LastNoticeData.links[type_name] = last_notice.link
+            try:
+                # 최초 실행 또는 새로운 타입일 경우 메시지를 보내지 않고 최근 공지 캐싱
+                if LastNoticeData.links.get(type_name) == None:
+                    logger.info(f"\"{scraper_type.name}\"의 캐시가 없습니다. 마지막 정보를 캐싱합니다.")
+                    
+                    last_notice = (await get_all_notices(type_name, 1))[0]
+                    LastNoticeData.links[type_name] = last_notice.link
 
-                logger.info(f"\"{scraper_type.name}\"의 마지막 게시물 \"{last_notice.title}\"를 캐싱했습니다.")
+                    logger.info(f"\"{scraper_type.name}\"의 마지막 게시물 \"{last_notice.title}\"를 캐싱했습니다.")
+                
+                # 캐싱한 마지막 공지 기준으로 새로운 공지 발견시 메시지 보내기
+                else:
+                    logger.info(f"\"{scraper_type.name}\"의 새 게시물을 가져옵니다...")
+                    new_notice_list = await get_new_notices(type_name, LastNoticeData.links[type_name])
+                    
+                    logger.info(f"\"{scraper_type.name}\"의 새 게시물은 {len(new_notice_list)}개 입니다.")
+                    
+                    for new_notice in reversed(new_notice_list):
+                        await send_notice(new_notice, scraper_type)
+
+                    if len(new_notice_list) != 0:
+                        LastNoticeData.links[type_name] = new_notice_list[0].link
+                        logger.info(f"\"{scraper_type.name}\"의 마지막 게시물 \"{new_notice_list[0].title}\"를 캐싱했습니다.")
             
-            # 캐싱한 마지막 공지 기준으로 새로운 공지 발견시 메시지 보내기
-            else:
-                logger.info(f"\"{scraper_type.name}\"의 새 게시물을 가져옵니다...")
-                new_notice_list = await get_new_notices(type_name, LastNoticeData.links[type_name])
-                
-                logger.info(f"\"{scraper_type.name}\"의 새 게시물은 {len(new_notice_list)}개 입니다.")
-                
-                for new_notice in reversed(new_notice_list):
-                    await send_notice(new_notice, scraper_type)
-
-                if len(new_notice_list) != 0:
-                    LastNoticeData.links[type_name] = new_notice_list[0].link
-                    logger.info(f"\"{scraper_type.name}\"의 마지막 게시물 \"{new_notice_list[0].title}\"를 캐싱했습니다.")
+            except Exception as e:
+                logger.error(f"\"{scraper_type.name}\" 처리 중 오류 발생: {e}")
+                continue
 
     except Exception as e:
-        logger.error(f"API 호출 테스크 중 오류: {e}")
+        logger.error(f"새로운 공지사항 확인 중 오류: {e}")
 
 
 @check_all_notice.before_loop
