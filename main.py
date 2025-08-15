@@ -39,7 +39,7 @@ def is_working_hour():
 
     return True
 
-
+# 개발 배포 테스트 문구
 @tasks.loop(minutes=INTERVAL)
 async def check_all_notice():
     """새로운 ENUM이 있는지 확인합니다. 
