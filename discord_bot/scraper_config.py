@@ -44,23 +44,27 @@ class ScraperConfig:
         if channel_type == "direct-messages":
             existing_dm = await get_direct_message(user_id=channel_id)
             if existing_dm:
+                if scraper_name in existing_dm["scrapers"]:
+                    return False # 이미 존재하는 스크래퍼이므로 False 반환
                 return await update_direct_message(
                     user_id=channel_id,
                     scrapers=existing_dm["scrapers"] + [scraper_name],
                 )
             else:
-                return await create_direct_message(
+                return await create_direct_message( # DM 사용자가 존재하지 않으면 생성
                     user_id=channel_id, user_name=channel_name, scrapers=[scraper_name]
                 )
         else:
             existing_server = await get_server_channel(channel_id=channel_id)
             if existing_server:
+                if scraper_name in existing_server["scrapers"]:
+                    return False  # 이미 존재하는 스크래퍼이므로 False 반환
                 return await update_server_channel(
                     channel_id=channel_id,
                     scrapers=existing_server["scrapers"] + [scraper_name],
                 )
             else:
-                return await create_server_channel(
+                return await create_server_channel( # 서버 채널이 존재하지 않으면 생성
                     guild_name=guild_name,
                     channel_name=channel_name,
                     channel_id=channel_id,
