@@ -23,7 +23,16 @@ else:
 print(f"INTERVAL: {INTERVAL}")
 
 def is_working_hour():
-    """현재 시간이 작동 시간(월~토 8시~20시)인지 확인합니다."""
+    """
+    Return True if the current time (Asia/Seoul) falls within configured working hours.
+    
+    Checks the current time in the Asia/Seoul timezone and returns whether it is a working hour:
+    - In non-production (ENV["IS_PROD"] is false) always returns True.
+    - In production, working hours are Monday through Saturday, 08:00 through 20:59 (inclusive). Sundays are treated as non-working.
+    
+    Returns:
+        bool: True when within working hours, False otherwise.
+    """
     if not ENV["IS_PROD"]:
         return True
 
@@ -42,8 +51,24 @@ def is_working_hour():
 # 개발 배포 테스트 문구
 @tasks.loop(minutes=INTERVAL)
 async def check_all_notice():
-    """새로운 ENUM이 있는지 확인합니다. 
-    새로운 공지가 있다면 메세지를 보냅니다."""
+    """
+    Check for new notices across all configured scraper types and send updates.
+    
+    This coroutine:
+    - Skips execution outside configured working hours.
+    - Refreshes category and scraper-type metadata.
+    - For each scraper type:
+      - If no last-seen link is cached, caches the most recent notice without sending.
+      - Otherwise, fetches notices newer than the cached link, sends each new notice (oldest first), and updates the cached last-seen link to the newest sent notice.
+    - Logs and continues on per-type errors; logs top-level errors but does not raise.
+    
+    Side effects:
+    - Sends messages via send_notice.
+    - Mutates MetaData.category_list, MetaData.scraper_type_list, and LastNoticeData.links.
+    
+    Returns:
+        None
+    """
     
     try:
         # 작동 시간이 아니면 스킵

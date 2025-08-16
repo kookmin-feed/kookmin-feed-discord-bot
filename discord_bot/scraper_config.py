@@ -38,7 +38,26 @@ class ScraperConfig:
         scraper_type: ScraperType,
         guild_name: str = None,
     ) -> bool:
-        """채널에 스크래퍼를 등록합니다."""
+        """
+        Register a scraper for a channel, creating the channel record if needed.
+        
+        Adds the scraper identified by scraper_type.collection_name to the channel's
+        scraper list. For direct messages, channel_type must be "direct-messages"; any
+        other value is treated as a server channel. If the channel record exists the
+        scraper name is appended (unless it is already present); if the channel record
+        does not exist a new direct-message or server channel record is created with
+        the scraper registered.
+        
+        Parameters:
+            channel_id (str): ID of the target channel or DM user.
+            channel_name (str): Display name of the channel or DM user.
+            channel_type (str): "direct-messages" for DMs, otherwise treated as a server channel.
+            scraper_type (ScraperType): Scraper descriptor; its `collection_name` is used as the scraper identifier.
+            guild_name (str | None): Server/guild name when creating a new server channel (optional).
+        
+        Returns:
+            bool: True if the scraper was added or the channel record was created; False if the scraper was already registered.
+        """
         scraper_name = scraper_type.collection_name
 
         if channel_type == "direct-messages":
