@@ -41,14 +41,51 @@ jobs:
           
           echo "Deploying discord-bot (branch: $BRANCH) to EC2..."
           
-          COMMAND_ID=$(aws ssm send-command \
+          # 사전 확인: EC2 인스턴스 상태
+          echo "Checking EC2 instance status..."
+          aws ec2 describe-instances \
             --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
-            --document-name "KookminFeed-DeployApplication:2" \
-            --parameters "service=discord-bot,branch=$BRANCH" \
-            --query 'Command.CommandId' \
+            --query 'Reservations[0].Instances[0].State.Name' \
+            --output text
+          
+          # 사전 확인: SSM Document 존재 여부 및 최신 버전 확인
+          echo "Checking SSM Document..."
+          DOCUMENT_STATUS=$(aws ssm describe-document \
+            --name "KookminFeed-DeployApplication" \
+            --query 'Document.Status' \
             --output text)
           
-          echo "Command ID: $COMMAND_ID"
+          echo "Document Status: $DOCUMENT_STATUS"
+          
+          # 최신 버전 가져오기
+          echo "Getting latest document version..."
+          LATEST_VERSION=$(aws ssm describe-document \
+            --name "KookminFeed-DeployApplication" \
+            --query 'Document.LatestVersion' \
+            --output text)
+          
+          echo "Latest Document Version: $LATEST_VERSION"
+          DOCUMENT_NAME="KookminFeed-DeployApplication:$LATEST_VERSION"
+          
+          # SSM 명령 실행
+          echo "Sending SSM command with document: $DOCUMENT_NAME"
+          set -e  # 오류 발생 시 스크립트 중단
+          
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
+            --document-name "$DOCUMENT_NAME" \
+            --parameters "service=discord-bot,branch=$BRANCH" \
+            --query 'Command.CommandId' \
+            --output text 2>&1)
+          
+          # COMMAND_ID 검증
+          if [ -z "$COMMAND_ID" ] || [ "$COMMAND_ID" = "None" ]; then
+            echo "❌ Failed to get Command ID from SSM send-command"
+            echo "COMMAND_ID value: '$COMMAND_ID'"
+            exit 1
+          fi
+          
+          echo "✅ Command ID: $COMMAND_ID"
           echo "command_id=$COMMAND_ID" >> $GITHUB_OUTPUT
           
           # Wait for command completion
