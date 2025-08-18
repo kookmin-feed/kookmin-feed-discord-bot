@@ -65,10 +65,10 @@ jobs:
             --output text)
           
           echo "Latest Document Version: $LATEST_VERSION"
-          DOCUMENT_NAME="KookminFeed-DeployApplication:$LATEST_VERSION"
+          DOCUMENT_NAME="KookminFeed-DeployApplication"  # 버전 명시하지 않음 (자동으로 최신 버전 사용)
           
           # SSM 명령 실행
-          echo "Sending SSM command with document: $DOCUMENT_NAME"
+          echo "Sending SSM command with document: $DOCUMENT_NAME (latest version: $LATEST_VERSION)"
           set -e  # 오류 발생 시 스크립트 중단
           
           COMMAND_ID=$(aws ssm send-command \
