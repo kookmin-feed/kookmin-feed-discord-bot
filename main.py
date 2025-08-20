@@ -54,9 +54,9 @@ async def check_all_notice():
             logger.info(f"작동 시간이 아닙니다. (현재 시각: {current_time})")
             return
 
-        logger.info("새로운 카테고리의 유무를 확인합니다...")
+        logger.debug("새로운 카테고리의 유무를 확인합니다...")
         MetaData.category_list = await get_all_categories()
-        logger.info("새로운 스크래퍼 타입의 유무를 확인합니다...")
+        logger.debug("새로운 스크래퍼 타입의 유무를 확인합니다...")
         MetaData.scraper_type_list = await get_all_scraper_types()
         
         for scraper_type in MetaData.scraper_type_list:
@@ -65,19 +65,19 @@ async def check_all_notice():
             try:
                 # 최초 실행 또는 새로운 타입일 경우 메시지를 보내지 않고 최근 공지 캐싱
                 if LastNoticeData.links.get(type_name) == None:
-                    logger.info(f"\"{scraper_type.name}\"의 캐시가 없습니다. 마지막 정보를 캐싱합니다.")
+                    logger.debug(f"\"{scraper_type.name}\"의 캐시가 없습니다. 마지막 정보를 캐싱합니다.")
                     
                     last_notice = (await get_all_notices(type_name, 1))[0]
                     LastNoticeData.links[type_name] = last_notice.link
 
-                    logger.info(f"\"{scraper_type.name}\"의 마지막 게시물 \"{last_notice.title}\"를 캐싱했습니다.")
+                    logger.debug(f"\"{scraper_type.name}\"의 마지막 게시물 \"{last_notice.title}\"를 캐싱했습니다.")
                 
                 # 캐싱한 마지막 공지 기준으로 새로운 공지 발견시 메시지 보내기
                 else:
-                    logger.info(f"\"{scraper_type.name}\"의 새 게시물을 가져옵니다...")
+                    logger.debug(f"\"{scraper_type.name}\"의 새 게시물을 가져옵니다...")
                     new_notice_list = await get_new_notices(type_name, LastNoticeData.links[type_name])
                     
-                    logger.info(f"\"{scraper_type.name}\"의 새 게시물은 {len(new_notice_list)}개 입니다.")
+                    logger.debug(f"\"{scraper_type.name}\"의 새 게시물은 {len(new_notice_list)}개 입니다.")
                     
                     for new_notice in reversed(new_notice_list):
                         await send_notice(new_notice, scraper_type)
@@ -112,22 +112,22 @@ async def main():
             )
 
         # data server connection 테스트
-        logger.info("Data Server 연결 상태를 검사합니다...")
+        logger.debug("Data Server 연결 상태를 검사합니다...")
         await get_data_from_server(endpoint="connect-check")
 
-        logger.info("meta data를 초기화합니다.")
+        logger.debug("meta data를 초기화합니다.")
         
         MetaData.category_list = await get_all_categories()
-        logger.info("카테고리 meta data 초기화 완료.")
+        logger.debug("카테고리 meta data 초기화 완료.")
 
         MetaData.scraper_type_list = await get_all_scraper_types()
-        logger.info("스크래퍼 타입 meta data를 초기화 완료.")
+        logger.debug("스크래퍼 타입 meta data를 초기화 완료.")
 
-        logger.info("kookmin-feed API 호출 테스크를 시작합니다...")
+        logger.debug("kookmin-feed API 호출 테스크를 시작합니다...")
         check_all_notice.start()
-        logger.info("kookmin-feed API 호출 테스크가 정상적으로 시작되었습니다.")
+        logger.debug("kookmin-feed API 호출 테스크가 정상적으로 시작되었습니다.")
 
-        logger.info("디스코드 봇을 시작합니다...")
+        logger.debug("디스코드 봇을 시작합니다...")
         await client.start(discord_token)
 
     except ValueError as e:
@@ -141,32 +141,6 @@ async def main():
         check_all_notice.cancel()
         await client.close()
         await asyncio.get_event_loop().shutdown_asyncgens()
-
-
-@client.event
-async def on_ready():
-    """봇이 시작될 때 실행되는 이벤트"""
-    logger.info(f"봇이 시작되었습니다: {client.user.name}")
-
-    try:
-        logger.info("슬래시 커맨드를 전역으로 등록합니다...")
-        await client.tree.sync()
-        logger.info("슬래시 커맨드 등록이 완료되었습니다.")
-    except Exception as e:
-        logger.error(f"슬래시 커맨드 등록 중 오류 발생: {e}")
-
-    logger.info("봇이 준비되었습니다!")
-
-
-@client.event
-async def on_guild_join(guild):
-    """봇이 새로운 서버에 참여했을 때 실행됩니다."""
-    logger.info(f"새로운 서버 [{guild.name}]에 참여했습니다.")
-    try:
-        await client.tree.sync(guild=guild)
-        logger.info(f"서버 [{guild.name}]에 슬래시 커맨드를 등록했습니다.")
-    except Exception as e:
-        logger.error(f"서버 [{guild.name}]에 슬래시 커맨드 등록 실패: {e}")
 
 
 if __name__ == "__main__":

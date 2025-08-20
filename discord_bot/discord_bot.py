@@ -46,16 +46,16 @@ client = NoticeBot()  # main.py에서 사용
 @client.event
 async def on_ready():
     """봇이 시작될 때 실행되는 이벤트"""
-    logger.info(f"봇이 시작되었습니다: {client.user.name}")
+    logger.debug(f"봇이 시작되었습니다: {client.user.name}")
 
     try:
-        logger.info("슬래시 커맨드를 전역으로 등록합니다...")
+        logger.debug("슬래시 커맨드를 전역으로 등록합니다...")
         await client.tree.sync()
-        logger.info("슬래시 커맨드 등록이 완료되었습니다.")
+        logger.debug("슬래시 커맨드 등록이 완료되었습니다.")
     except Exception as e:
         logger.error(f"슬래시 커맨드 등록 중 오류 발생: {e}")
 
-    logger.info("봇이 준비되었습니다!")
+    logger.debug("봇이 준비되었습니다!")
 
 
 @client.event
@@ -85,13 +85,13 @@ async def send_notice(notice: NoticeData, scraper_type: ScraperType):
                         if not channel:
                             channel = await user.create_dm()
                     except:
-                        logger.warning(f"사용자 ID {channel_id}를 찾을 수 없습니다.")
+                        logger.error(f"사용자 ID {channel_id}를 찾을 수 없습니다.")
                         continue
 
                 if not isinstance(channel, discord.DMChannel):
                     permissions = channel.permissions_for(channel.guild.me)
                     if not permissions.send_messages or not permissions.embed_links:
-                        logger.warning(
+                        logger.error(
                             f"채널 [{channel.name}]에 메시지를 보낼 권한이 없습니다."
                         )
                         continue
@@ -118,11 +118,11 @@ async def send_notice(notice: NoticeData, scraper_type: ScraperType):
                 )
 
             except discord.Forbidden:
-                logger.warning(
+                logger.error(
                     f'채널 [{getattr(channel, "name", "DM")}]에 메시지를 보낼 권한이 없습니다.'
                 )
             except discord.NotFound:
-                logger.warning(f"채널 ID {channel_id}가 존재하지 않습니다.")
+                logger.error(f"채널 ID {channel_id}가 존재하지 않습니다.")
             except Exception as e:
                 logger.error(f"채널 [{channel_id}] 메시지 전송 중 오류: {str(e)}")
     except Exception as e:
