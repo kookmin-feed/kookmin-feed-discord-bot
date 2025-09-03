@@ -67,7 +67,11 @@ async def check_all_notice():
                 if LastNoticeData.links.get(type_name) == None:
                     logger.debug(f"\"{scraper_type.name}\"의 캐시가 없습니다. 마지막 정보를 캐싱합니다.")
                     
-                    last_notice = (await get_all_notices(type_name, 1))[0]
+                    last_notice = (await get_all_notices(type_name, 1))
+                    if len(last_notice) == 0:
+                        logger.warning(f"\"{scraper_type.name}\"의 공지가 데이터베이스에 없습니다.")
+                        continue
+                    last_notice = last_notice[0]
                     LastNoticeData.links[type_name] = last_notice.link
 
                     logger.debug(f"\"{scraper_type.name}\"의 마지막 게시물 \"{last_notice.title}\"를 캐싱했습니다.")
