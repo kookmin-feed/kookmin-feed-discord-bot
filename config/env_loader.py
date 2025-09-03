@@ -5,16 +5,16 @@ from pathlib import Path
 
 
 def is_ubuntu() -> bool:
-    """현재 OS가 Ubuntu인지 확인합니다."""
+    """현재 OS가 Ubuntu, Debian인지 확인합니다."""
     try:
         # /etc/os-release 파일 확인
         if os.path.exists("/etc/os-release"):
             with open("/etc/os-release", "r") as f:
                 content = f.read().lower()
-                return "ubuntu" in content
+                return "ubuntu" in content or "debian" in content
 
         # platform 모듈을 통한 확인
-        return "ubuntu" in platform.platform().lower()
+        return "ubuntu" in platform.platform().lower() or "debian" in platform.platform().lower()
     except Exception as e:
         return False
 

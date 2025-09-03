@@ -120,11 +120,11 @@ class RegisterView(discord.ui.View):
                 )
                 if channel_type == "server-channels":
                     logger.info(
-                        f"서버 채널에서 등록: 채널 ID - {channel_id} | 서버 이름 - {guild_name} | 채널 이름 - {channel_name} | 스크래퍼 타입 - {scraper_type.korean_name}"
+                        f"[USER] 서버 채널에서 등록: 채널 ID - {channel_id} | 서버 이름 - {guild_name} | 채널 이름 - {channel_name} | 스크래퍼 타입 - {scraper_type.korean_name}"
                     )
                 else:
                     logger.info(
-                        f"DM에서 등록: 사용자 ID - {channel_id} | 사용자 이름 - {channel_name} | 스크래퍼 타입 - {scraper_type.korean_name}"
+                        f"[USER]DM에서 등록: 사용자 ID - {channel_id} | 사용자 이름 - {channel_name} | 스크래퍼 타입 - {scraper_type.korean_name}"
                     )
             else:
                 # 이미 등록된 경우
@@ -133,7 +133,7 @@ class RegisterView(discord.ui.View):
                     content=f"이미 이 {channel_type}은(는) {scraper_type.korean_name} 알림을 받도록 등록되어 있습니다."
                 )
         except Exception as e:
-            logger.error(f"알림 등록 중 오류 발생: {e}")
+            logger.error(f"[USER] 알림 등록 중 오류 발생: {e}")
             await self.interaction.edit_original_response(content="❌ 오류 발생")
             await followup.send(content="알림 등록 중 오류가 발생했습니다.")
 
@@ -160,7 +160,7 @@ async def setup(bot):
                 "게시판을 선택해주세요:", view=view, ephemeral=True
             )
         except Exception as e:
-            logger.error(f"알림 등록 중 오류 발생: {e}")
+            logger.error(f"[USER] 알림 등록 중 오류 발생: {e}")
             await interaction.response.send_message(
                 "알림 등록 중 오류가 발생했습니다.", ephemeral=True
             )
@@ -278,7 +278,7 @@ async def setup(bot):
                     await interaction.response.edit_message(view=view)
 
                 except Exception as e:
-                    logger.error(f"카테고리 선택 중 오류 발생: {e}")
+                    logger.error(f"[USER] 카테고리 선택 중 오류 발생: {e}")
                     await interaction.response.send_message(
                         "카테고리 선택 중 오류가 발생했습니다.", ephemeral=True
                     )
@@ -295,11 +295,11 @@ async def setup(bot):
                         message = f"✅ 이 {channel_type}에서 {scraper_type.korean_name} 알림이 삭제되었습니다."
                         if channel_type == "server-channels":
                             logger.info(
-                                f"서버 채널에서 삭제: 채널 ID - {channel_id} | 서버 이름 - {interaction.guild.name} | 채널 이름 - {interaction.channel.name} | 스크래퍼 타입 - {scraper_type.korean_name}"
+                                f"[USER] 서버 채널에서 삭제: 채널 ID - {channel_id} | 서버 이름 - {interaction.guild.name} | 채널 이름 - {interaction.channel.name} | 스크래퍼 타입 - {scraper_type.korean_name}"
                             )
                         else:
                             logger.info(
-                                f"DM에서 삭제: 사용자 ID - {channel_id} | 사용자 이름 - {interaction.user.name} | 스크래퍼 타입 - {scraper_type.korean_name}"
+                                f"[USER] DM에서 삭제: 사용자 ID - {channel_id} | 사용자 이름 - {interaction.user.name} | 스크래퍼 타입 - {scraper_type.korean_name}"
                             )
                     else:
                         message = f"❗ 이 {channel_type}에는 {scraper_type.korean_name} 알림이 등록되어 있지 않습니다."
@@ -307,7 +307,7 @@ async def setup(bot):
                     await interaction.response.edit_message(content=message, view=None)
 
                 except Exception as e:
-                    logger.error(f"게시판 선택 중 오류 발생: {e}")
+                    logger.error(f"[USER] 게시판 선택 중 오류 발생: {e}")
                     await interaction.response.send_message(
                         "게시판 선택 중 오류가 발생했습니다.", ephemeral=True
                     )
@@ -327,7 +327,7 @@ async def setup(bot):
             )
 
         except Exception as e:
-            logger.error(f"알림 삭제 중 오류 발생: {e}")
+            logger.error(f"[USER] 알림 삭제 중 오류 발생: {e}")
             await interaction.response.send_message(
                 "알림 삭제 중 오류가 발생했습니다.", ephemeral=True
             )
@@ -368,17 +368,17 @@ async def setup(bot):
 
             if channel_type == "direct-messages":
                 logger.info(
-                    f"DM에서 목록 조회: 사용자 ID - {channel_id} | 사용자 이름 - {channel_name}"
+                    f"[USER] DM에서 목록 조회: 사용자 ID - {channel_id} | 사용자 이름 - {channel_name}"
                 )
             else:
                 logger.info(
-                    f"서버 채널에서 목록 조회: 채널 ID - {channel_id} | 서버 이름 - {guild_name} | 채널 이름 - {channel_name}"
+                    f"[USER] 서버 채널에서 목록 조회: 채널 ID - {channel_id} | 서버 이름 - {guild_name} | 채널 이름 - {channel_name}"
                 )
 
             await interaction.response.send_message(message, ephemeral=True)
 
         except Exception as e:
-            logger.error(f"알림 목록 조회 중 오류 발생: {e}")
+            logger.error(f"[USER] 알림 목록 조회 중 오류 발생: {e}")
             await interaction.response.send_message(
                 "알림 목록 조회 중 오류가 발생했습니다.", ephemeral=True
             )
