@@ -15,12 +15,13 @@ from template.notice_data import NoticeData
 
 
 if ENV["IS_PROD"]:
-    INTERVAL = 10
+    INTERVAL = 60
 else:
     INTERVAL = 2
 
 
 print(f"INTERVAL: {INTERVAL}")
+
 
 def is_working_hour():
     """현재 시간이 작동 시간(월~토 8시~20시)인지 확인합니다."""
@@ -39,12 +40,13 @@ def is_working_hour():
 
     return True
 
+
 # 개발 배포 테스트 문구
 @tasks.loop(minutes=INTERVAL)
 async def check_all_notice():
-    """새로운 ENUM이 있는지 확인합니다. 
+    """새로운 ENUM이 있는지 확인합니다.
     새로운 공지가 있다면 메세지를 보냅니다."""
-    
+
     try:
         # 작동 시간이 아니면 스킵
         if not is_working_hour():
@@ -58,40 +60,52 @@ async def check_all_notice():
         MetaData.category_list = await get_all_categories()
         logger.debug("새로운 스크래퍼 타입의 유무를 확인합니다...")
         MetaData.scraper_type_list = await get_all_scraper_types()
-        
+
         for scraper_type in MetaData.scraper_type_list:
             type_name = scraper_type.collection_name
-            
+
             try:
                 # 최초 실행 또는 새로운 타입일 경우 메시지를 보내지 않고 최근 공지 캐싱
                 if LastNoticeData.links.get(type_name) == None:
-                    logger.debug(f"\"{scraper_type.name}\"의 캐시가 없습니다. 마지막 정보를 캐싱합니다.")
-                    
-                    last_notice = (await get_all_notices(type_name, 1))
+                    logger.debug(
+                        f'"{scraper_type.name}"의 캐시가 없습니다. 마지막 정보를 캐싱합니다.'
+                    )
+
+                    last_notice = await get_all_notices(type_name, 1)
                     if len(last_notice) == 0:
-                        logger.warning(f"\"{scraper_type.name}\"의 공지가 데이터베이스에 없습니다.")
+                        logger.warning(
+                            f'"{scraper_type.name}"의 공지가 데이터베이스에 없습니다.'
+                        )
                         continue
                     last_notice = last_notice[0]
                     LastNoticeData.links[type_name] = last_notice.link
 
-                    logger.debug(f"\"{scraper_type.name}\"의 마지막 게시물 \"{last_notice.title}\"를 캐싱했습니다.")
-                
+                    logger.debug(
+                        f'"{scraper_type.name}"의 마지막 게시물 "{last_notice.title}"를 캐싱했습니다.'
+                    )
+
                 # 캐싱한 마지막 공지 기준으로 새로운 공지 발견시 메시지 보내기
                 else:
-                    logger.debug(f"\"{scraper_type.name}\"의 새 게시물을 가져옵니다...")
-                    new_notice_list = await get_new_notices(type_name, LastNoticeData.links[type_name])
-                    
-                    logger.debug(f"\"{scraper_type.name}\"의 새 게시물은 {len(new_notice_list)}개 입니다.")
-                    
+                    logger.debug(f'"{scraper_type.name}"의 새 게시물을 가져옵니다...')
+                    new_notice_list = await get_new_notices(
+                        type_name, LastNoticeData.links[type_name]
+                    )
+
+                    logger.debug(
+                        f'"{scraper_type.name}"의 새 게시물은 {len(new_notice_list)}개 입니다.'
+                    )
+
                     for new_notice in reversed(new_notice_list):
                         await send_notice(new_notice, scraper_type)
 
                     if len(new_notice_list) != 0:
                         LastNoticeData.links[type_name] = new_notice_list[0].link
-                        logger.info(f"\"{scraper_type.name}\"의 마지막 게시물 \"{new_notice_list[0].title}\"를 캐싱했습니다.")
-            
+                        logger.info(
+                            f'"{scraper_type.name}"의 마지막 게시물 "{new_notice_list[0].title}"를 캐싱했습니다.'
+                        )
+
             except Exception as e:
-                logger.error(f"\"{scraper_type.name}\" 처리 중 오류 발생: {e}")
+                logger.error(f'"{scraper_type.name}" 처리 중 오류 발생: {e}')
                 continue
 
     except Exception as e:
@@ -120,7 +134,7 @@ async def main():
         await get_data_from_server(endpoint="connect-check")
 
         logger.debug("meta data를 초기화합니다.")
-        
+
         MetaData.category_list = await get_all_categories()
         logger.debug("카테고리 meta data 초기화 완료.")
 
