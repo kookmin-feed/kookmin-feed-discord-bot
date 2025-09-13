@@ -2,7 +2,7 @@ import discord
 from template.scraper_type import ScraperType
 from config.logger_config import setup_logger
 from template.scraper_category import ScraperCategory
-from template.scraper_type_list import MetaData 
+from template.scraper_type_list import MetaData
 
 logger = setup_logger(__name__)
 
@@ -15,50 +15,64 @@ class RegisterView(discord.ui.View):
         self.board = None
         self._namespace = {"category": None, "board": None}
 
-    @discord.ui.select(
-        placeholder="게시판 카테고리를 선택하세요",
-        options=[
+        # 동적 카테고리 셀렉트 생성
+        category_options = [
             discord.SelectOption(label=choice.korean_name, value=choice.name)
             for choice in MetaData.category_list
-        ],
-    )
-    async def select_category(
-        self, interaction: discord.Interaction, select: discord.ui.Select
-    ):
-        self.category = select.values[0]
-        self._namespace["category"] = self.category
-        self.update_board_select()
-        selected_category = next(
-            (
-                choice.korean_name
-                for choice in MetaData.category_list
-                if choice.name == select.values[0]
-            ),
-            "알 수 없는 카테고리",
+        ] or [discord.SelectOption(label="카테고리가 없습니다", value="none")]
+
+        self.category_select = discord.ui.Select(
+            placeholder="게시판 카테고리를 선택하세요",
+            options=category_options,
         )
-        self.select_category.placeholder = selected_category
 
-        await interaction.response.edit_message(view=self)
+        async def on_category(interaction: discord.Interaction):
+            selected_value = self.category_select.values[0]
+            self.category = selected_value
+            self._namespace["category"] = selected_value
 
-    @discord.ui.select(
-        placeholder="게시판을 선택하세요",
-        options=[
-            discord.SelectOption(label="먼저 카테고리를 선택하세요", value="none")
-        ],
-    )
-    async def select_board(
-        self, interaction: discord.Interaction, select: discord.ui.Select
-    ):
-        self.board = select.values[0]
-        self._namespace["board"] = self.board
+            # 선택된 카테고리의 한글명으로 placeholder 갱신
+            selected_category_kr = next(
+                (
+                    choice.korean_name
+                    for choice in MetaData.category_list
+                    if choice.name == selected_value
+                ),
+                "알 수 없는 카테고리",
+            )
+            self.category_select.placeholder = selected_category_kr
 
-        # UI 제거하고 '등록 중' 메시지 표시
-        await interaction.response.edit_message(
-            content="등록 중...",
-            view=None,
+            # 게시판 옵션 갱신
+            self.update_board_select()
+
+            await interaction.response.edit_message(view=self)
+
+        self.category_select.callback = on_category
+        self.add_item(self.category_select)
+
+        # 동적 게시판 셀렉트 생성
+        self.board_select = discord.ui.Select(
+            placeholder="게시판을 선택하세요",
+            options=[
+                discord.SelectOption(label="먼저 카테고리를 선택하세요", value="none")
+            ],
         )
-        # 등록 처리 진행
-        await self.register_notice(interaction.followup)
+
+        async def on_board(interaction: discord.Interaction):
+            selected_value = self.board_select.values[0]
+            self.board = selected_value
+            self._namespace["board"] = selected_value
+
+            # UI 제거하고 '등록 중' 메시지 표시
+            await interaction.response.edit_message(
+                content="등록 중...",
+                view=None,
+            )
+            # 등록 처리 진행
+            await self.register_notice(interaction.followup)
+
+        self.board_select.callback = on_board
+        self.add_item(self.board_select)
 
     def update_board_select(self):
         if not self.category:
@@ -71,7 +85,7 @@ class RegisterView(discord.ui.View):
 
         if category:
             choices = MetaData.get_scraper_type_in_category(category)
-            self.select_board.options = [
+            self.board_select.options = [
                 discord.SelectOption(label=choice.korean_name, value=choice.name)
                 for choice in choices
             ]
@@ -193,7 +207,9 @@ async def setup(bot):
 
             # 등록된 스크래퍼 목록 가져오기
             registered_scrapers = (
-                await interaction.client.scraper_config.get_channel_scrapers(channel_id=channel_id, channel_type=channel_type)
+                await interaction.client.scraper_config.get_channel_scrapers(
+                    channel_id=channel_id, channel_type=channel_type
+                )
             )
 
             if not registered_scrapers:
@@ -350,8 +366,10 @@ async def setup(bot):
                 guild_name = interaction.guild.name
 
             # 등록된 스크래퍼 목록 가져오기
-            scraper_type_list = await interaction.client.scraper_config.get_channel_scrapers(
-                channel_id=channel_id, channel_type=channel_type
+            scraper_type_list = (
+                await interaction.client.scraper_config.get_channel_scrapers(
+                    channel_id=channel_id, channel_type=channel_type
+                )
             )
 
             if scraper_type_list:
