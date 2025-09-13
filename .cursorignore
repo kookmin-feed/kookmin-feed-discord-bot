@@ -1,0 +1,107 @@
+# Cursor가 불필요하게 읽지 않아도 되는 파일/폴더 목록
+
+# OS/에디터 임시파일
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.orig
+*.tmp
+*.temp
+*.bak
+
+# VCS
+.git/
+.gitignore
+.gitattributes
+
+# Python 캐시/빌드 산출물
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+.venv/
+venv/
+.env/
+.env.*
+.venv*/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+build/
+dist/
+site/
+.eggs/
+*.egg-info/
+.ipynb_checkpoints/
+.pyre/
+.pytype/
+.cache/
+
+# 로그
+logs/
+*.log
+
+# IDE/에디터 설정
+.vscode/
+.idea/
+.history/
+*.code-workspace
+
+# Docker/런타임 소켓 등
+*.pid
+*.sock
+
+# 데이터/임시 산출물
+data/
+outputs/
+tmp/
+temp/
+
+# (있다면) 프론트엔드 관련 대용량 폴더
+node_modules/
+.yarn/
+.pnp*
+.npm/
+.bun/
+.next/
+.nuxt/
+.parcel-cache/
+coverage/
+coverage.*
+*.tsbuildinfo
+
+# 바이너리/대용량 파일
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.gz
+*.bz2
+*.xz
+*.db
+*.sqlite
+*.sqlite3
+*.mp4
+*.mp3
+*.wav
+*.mov
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.svg
+*.pdf
+*.ico
+*.woff
+*.woff2
+
+# 프로젝트 특화(환경 폴더 등)
+envs/
+
