@@ -1,31 +1,3 @@
-name: main branch auto ci process script
-
-on:
-  push:
-    branches: [ main ]
-
-jobs:
-  deploy:
-    name: deploy
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: excuting remote ssh commands
-        uses: appleboy/ssh-action@v0.1.9
-        with:
-          host: ${{ secrets.REMOTE_IP }} 
-          username: ${{ secrets.REMOTE_USER }} 
-          key: ${{ secrets.REMOTE_PRIVATE_KEY }}
-          port: ${{ secrets.REMOTE_SSH_PORT }}
-          script: | # 실행될 스크립트 python3 -m venv venv 윈도우 환경이랑 우분투 환경에서 생성하는 디렉토리 구조가 달라서 추가
-            cd /home/ubuntu/kookmin-feed
-            sudo git reset --hard
-            sudo git pull
-            sudo python3 -m venv venv
-            source venv/bin/activate
-            pip install -r requirements.txt
-            pm2 restart kookmin-feed
-
 name: Deploy Discord Bot
 
 on:
