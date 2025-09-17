@@ -2,14 +2,22 @@ name: Deploy Discord Bot
 
 on:
   push:
-    branches: [ develop, main ]
+    branches: [develop, main]
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Branch to deploy'
+        description: "Branch to deploy"
         required: true
-        default: 'develop'
+        default: "develop"
         type: string
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - prod
 
 env:
   AWS_REGION: ap-northeast-2
@@ -17,89 +25,94 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     # OIDC 권한 설정
     permissions:
       id-token: write
       contents: read
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
-      - name: Set environment variables
+
+      - name: Determine environment
+        id: env
         run: |
-          if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.event.inputs.branch }}" == "main" ]]; then
-            echo "ENV_SUFFIX=PROD" >> $GITHUB_ENV
+          if [ "${{ github.event.inputs.environment }}" != "" ]; then
+            # Manual workflow dispatch
+            ENV="${{ github.event.inputs.environment }}"
+            BRANCH="${{ github.event.inputs.branch }}"
+          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            # Push to main branch
+            ENV="prod"
+            BRANCH="main"
           else
-            echo "ENV_SUFFIX=DEV" >> $GITHUB_ENV
+            # Push to develop branch or other
+            ENV="dev"
+            BRANCH="develop"
           fi
-      
+
+          echo "environment=$ENV" >> $GITHUB_OUTPUT
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          echo "Environment: $ENV, Branch: $BRANCH"
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets[format('AWS_ROLE_ARN_{0}', env.ENV_SUFFIX)] }}
-          role-session-name: GitHubActions-DeployDiscordBot
+          role-to-assume: ${{ steps.env.outputs.environment == 'prod' && secrets.AWS_ROLE_ARN_PROD || secrets.AWS_ROLE_ARN_DEV }}
+          role-session-name: GitHubActions-DeployDiscordBot-${{ steps.env.outputs.environment }}
           aws-region: ${{ env.AWS_REGION }}
-      
-      - name: Create environment file
-        run: |
-          # .env 파일 생성
-          cat > .env <<EOF
-          ENVIRONMENT=${{ secrets[format('ENVIRONMENT_{0}', env.ENV_SUFFIX)] }}
-          DISCORD_TOKEN=${{ secrets[format('DISCORD_TOKEN_{0}', env.ENV_SUFFIX)] }}
-          MONGODB_URI=${{ secrets[format('MONGODB_URI_{0}', env.ENV_SUFFIX)] }}
-          DB_NAME=${{ secrets[format('DB_NAME_{0}', env.ENV_SUFFIX)] }}
-          DATA_SERVER_URL=${{ secrets[format('DATA_SERVER_URL_{0}', env.ENV_SUFFIX)] }}
-          DATA_SERVER_API_KEY=${{ secrets[format('DATA_SERVER_API_KEY_{0}', env.ENV_SUFFIX)] }}
-          EOF
 
       - name: Deploy via SSM Run Command
         id: deploy
         run: |
-          # 브랜치 결정 로직
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            BRANCH="main"
-          elif [[ "${{ github.event.inputs.branch }}" != "" ]]; then
-            BRANCH="${{ github.event.inputs.branch }}"
+          ENV="${{ steps.env.outputs.environment }}"
+          BRANCH="${{ steps.env.outputs.branch }}"
+
+          # Set environment-specific variables
+          if [ "$ENV" = "prod" ]; then
+            INSTANCE_ID="${{ secrets.EC2_INSTANCE_ID_PROD }}"
+            DOCUMENT_NAME="KookminFeed-DeployApplication-prod"
           else
-            BRANCH="develop"
+            INSTANCE_ID="${{ secrets.EC2_INSTANCE_ID_DEV }}"
+            DOCUMENT_NAME="KookminFeed-DeployApplication-dev"
           fi
-          
-          # .env 파일을 base64로 인코딩
-          ENV_CONTENT=$(base64 -w 0 .env)
-          
-          echo "Deploying discord-bot (branch: $BRANCH) to EC2..."
-          
+
+          echo "Deploying discord-bot to $ENV environment (branch: $BRANCH)..."
+          echo "Instance ID: $INSTANCE_ID"
+          echo "Document: $DOCUMENT_NAME"
+
           COMMAND_ID=$(aws ssm send-command \
-            --instance-ids "${{ secrets[format('EC2_INSTANCE_ID_{0}', env.ENV_SUFFIX)] }}" \
-            --document-name "KookminFeed-DeployApplication" \
-            --parameters "service=discord-bot,branch=$BRANCH,envContent=$ENV_CONTENT" \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name "$DOCUMENT_NAME" \
+            --parameters "service=discord-bot,branch=$BRANCH" \
             --query 'Command.CommandId' \
             --output text)
-          
+
           echo "Command ID: $COMMAND_ID"
           echo "command_id=$COMMAND_ID" >> $GITHUB_OUTPUT
-          
+          echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
+
           # Wait for command completion
           echo "Waiting for deployment to complete..."
           aws ssm wait command-executed \
             --command-id "$COMMAND_ID" \
-            --instance-id "${{ secrets[format('EC2_INSTANCE_ID_{0}', env.ENV_SUFFIX)] }}"
-      
+            --instance-id "$INSTANCE_ID"
+
       - name: Get deployment result
         run: |
           COMMAND_ID="${{ steps.deploy.outputs.command_id }}"
-          
+          INSTANCE_ID="${{ steps.deploy.outputs.instance_id }}"
+
           echo "Getting deployment result..."
           RESULT=$(aws ssm get-command-invocation \
             --command-id "$COMMAND_ID" \
-            --instance-id "${{ secrets[format('EC2_INSTANCE_ID_{0}', env.ENV_SUFFIX)] }}" \
+            --instance-id "$INSTANCE_ID" \
             --query 'Status' \
             --output text)
-          
+
           echo "Deployment status: $RESULT"
-          
+
           if [ "$RESULT" = "Success" ]; then
             echo "✅ Deployment completed successfully!"
           else
@@ -107,20 +120,21 @@ jobs:
             # Get error details
             aws ssm get-command-invocation \
               --command-id "$COMMAND_ID" \
-              --instance-id "${{ secrets[format('EC2_INSTANCE_ID_{0}', env.ENV_SUFFIX)] }}" \
+              --instance-id "$INSTANCE_ID" \
               --query 'StandardErrorContent' \
               --output text
             exit 1
           fi
-      
+
       - name: Get deployment logs
         if: always()
         run: |
           COMMAND_ID="${{ steps.deploy.outputs.command_id }}"
-          
+          INSTANCE_ID="${{ steps.deploy.outputs.instance_id }}"
+
           echo "=== Deployment Logs ==="
           aws ssm get-command-invocation \
             --command-id "$COMMAND_ID" \
-            --instance-id "${{ secrets[format('EC2_INSTANCE_ID_{0}', env.ENV_SUFFIX)] }}" \
+            --instance-id "$INSTANCE_ID" \
             --query 'StandardOutputContent' \
             --output text
