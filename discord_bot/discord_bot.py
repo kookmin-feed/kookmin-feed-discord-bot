@@ -1,3 +1,14 @@
+from pathlib import Path
+import sys
+import asyncio
+from datetime import datetime
+
+# # 프로젝트 루트를 sys.path에 추가
+# project_root = Path(__file__).parent.parent
+# if str(project_root) not in sys.path:
+#     sys.path.insert(0, str(project_root))
+#       uv run python discord_bot/discord_bot.py 로 테스트 할 수 있는 테스트 코드
+
 import discord
 from discord import app_commands
 from discord_bot.scraper_config import ScraperConfig
@@ -77,24 +88,16 @@ async def send_notice(notice: NoticeData, scraper_type: ScraperType):
         channels = await client.scraper_config.get_channels_for_scraper(scraper_type)
         for channel_id in channels:
             try:
-                channel = client.get_channel(int(channel_id))
-                if not channel:
-                    try:
-                        user = await client.fetch_user(int(channel_id))
-                        channel = user.dm_channel
-                        if not channel:
-                            channel = await user.create_dm()
-                    except:
-                        logger.error(f"사용자 ID {channel_id}를 찾을 수 없습니다.")
-                        continue
+                # 먼저 유저 ID로 시도
+                try:
+                    user = await client.fetch_user(int(channel_id))
+                    channel = user.dm_channel
+                    if channel is None:
+                        channel = await user.create_dm()
 
-                if not isinstance(channel, discord.DMChannel):
-                    permissions = channel.permissions_for(channel.guild.me)
-                    if not permissions.send_messages or not permissions.embed_links:
-                        logger.error(
-                            f"채널 [{channel.name}]에 메시지를 보낼 권한이 없습니다."
-                        )
-                        continue
+                except discord.NotFound:
+                    # 유저를 찾을 수 없으면 채널 ID일 가능성이 있으므로 채널로 시도
+                    channel = await client.fetch_channel(int(channel_id))
 
                 embed = discord.Embed(
                     title=notice.title, url=notice.link, color=discord.Color.blue()
@@ -113,17 +116,98 @@ async def send_notice(notice: NoticeData, scraper_type: ScraperType):
                     )
 
                 await channel.send(embed=embed)
-                logger.info(
-                    f'채널 [{getattr(channel, "name", "DM")}]에 공지사항을 전송했습니다: {notice.title}'
-                )
 
-            except discord.Forbidden:
+                # except가 발생하지 않았을 때만 로그 출력
+                if "channel" in locals():
+                    if isinstance(channel, discord.DMChannel):
+                        channel_name = getattr(
+                            channel.recipient, "name", "channel is None"
+                        )
+                        logger.info(
+                            f"DM 채널 [{channel_name}]에 공지사항을 전송했습니다: {notice.title}"
+                        )
+                    elif hasattr(channel, "guild"):
+                        channel_name = getattr(channel, "name", "channel is None")
+                        logger.info(
+                            f"채널 [{channel_name}]에 공지사항을 전송했습니다: {notice.title}"
+                        )
+                    else:
+                        logger.error(
+                            f"채널 {channel_id}: 알 수 없는 채널 타입 {type(channel)}"
+                        )
+
+            except discord.Forbidden as e:
+                if "channel" in locals() and isinstance(channel, discord.DMChannel):
+                    logger.error(
+                        f"[{scraper_type.korean_name}] {channel_id} 유저: {channel.recipient} 에 메세지를 보낼 권한이 없습니다."
+                    )
+                else:
+                    logger.error(
+                        f"[{scraper_type.korean_name}] 채널: {channel_id} 채널 권한 오류: {str(e)}"
+                    )
+            except discord.NotFound as e:
+                # 이미 내부에서 처리했지만, 다른 경우를 대비한 예외 처리
                 logger.error(
-                    f'채널 [{getattr(channel, "name", "DM")}]에 메시지를 보낼 권한이 없습니다.'
+                    f"채널/유저 ID {channel_id}를 찾을 수 없습니다. 오류: {str(e)}"
                 )
-            except discord.NotFound:
-                logger.error(f"채널 ID {channel_id}가 존재하지 않습니다.")
             except Exception as e:
                 logger.error(f"채널 [{channel_id}] 메시지 전송 중 오류: {str(e)}")
+
     except Exception as e:
         logger.error(f"디스코드 메시지 전송 중 오류 발생: {e}")
+
+
+# async def main():
+#     """메인 비동기 함수
+#       uv run python discord_bot/discord_bot.py 로 테스트 할 수 있는 테스트 코드
+# """
+#     id_list = ["360697010581536768"]
+
+#     # 봇을 백그라운드에서 시작
+#     async def start_bot():
+#         try:
+#             await client.start(ENV["DISCORD_TOKEN"])
+#         except Exception as e:
+#             logger.error(f"봇 시작 중 오류 발생: {e}")
+
+#     # 봇 시작 태스크 생성
+#     bot_task = asyncio.create_task(start_bot())
+
+#     # 태스크가 시작되고 클라이언트가 초기화될 시간을 줍니다
+#     await asyncio.sleep(1)
+
+#     try:
+#         # 봇이 준비될 때까지 대기
+#         await client.wait_until_ready()
+#         logger.info("봇이 준비되었습니다. 권한 체크를 시작합니다.")
+
+#         # 임시 데이터 생성
+#         scraper_type = ScraperType(
+#             korean_name="대학 학사공지",
+#             scraper_colloction_name="university_academic",
+#             scraper_type_name="UNIVERSITY_ACADEMIC",
+#         )
+#         notice_data = NoticeData(
+#             title="테스트 공지사항",
+#             link="https://cs.kookmin.ac.kr/news/kookmin/academic/",
+#             published=datetime.now(),
+#             scraper_type=scraper_type,
+#         )
+
+#         # 권한 체크 수행
+#         try:
+#             for id in id_list:
+#                 await send_notice(notice_data, scraper_type)
+
+#         except Exception as e:
+#             logger.error(f"채널 권한 체크 중 오류 발생: {e}")
+
+#         # 봇이 계속 실행되도록 대기
+#         await bot_task
+#     except Exception as e:
+#         logger.error(f"봇 실행 중 오류 발생: {e}")
+#         raise
+
+
+# if __name__ == "__main__":
+#     asyncio.run(main())
