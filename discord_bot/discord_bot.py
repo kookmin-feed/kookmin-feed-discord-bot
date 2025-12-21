@@ -87,6 +87,7 @@ async def send_notice(notice: NoticeData, scraper_type: ScraperType):
 
         channels = await client.scraper_config.get_channels_for_scraper(scraper_type)
         for channel_id in channels:
+            channel = None  # Initialize channel to avoid NameError
             try:
                 # 먼저 유저 ID로 시도
                 try:
@@ -118,7 +119,7 @@ async def send_notice(notice: NoticeData, scraper_type: ScraperType):
                 await channel.send(embed=embed)
 
                 # except가 발생하지 않았을 때만 로그 출력
-                if "channel" in locals():
+                if channel is not None:
                     if isinstance(channel, discord.DMChannel):
                         channel_name = getattr(
                             channel.recipient, "name", "channel is None"
@@ -137,7 +138,7 @@ async def send_notice(notice: NoticeData, scraper_type: ScraperType):
                         )
 
             except discord.Forbidden as e:
-                if "channel" in locals() and isinstance(channel, discord.DMChannel):
+                if channel is not None and isinstance(channel, discord.DMChannel):
                     logger.error(
                         f"[{scraper_type.korean_name}] {channel_id} 유저: {channel.recipient} 에 메세지를 보낼 권한이 없습니다."
                     )
