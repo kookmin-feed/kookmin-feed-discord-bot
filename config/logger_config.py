@@ -17,7 +17,7 @@ def setup_logger(name: str) -> logging.Logger:
     log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     formatter = logging.Formatter(log_format)
 
-    # stdout 핸들러 (환경에 따라 DEBUG 또는 INFO 레벨)
+    # stdout 핸들러 (환경에 따라 DEBUG 또는 INFO 레벨, ERROR 제외)
     stdout_handler = logging.StreamHandler(sys.stdout)
     stdout_handler.setFormatter(formatter)
 
@@ -30,7 +30,10 @@ def setup_logger(name: str) -> logging.Logger:
         logger.setLevel(logging.DEBUG)
         stdout_handler.setLevel(logging.DEBUG)
 
-    # stderr 핸들러 (ERROR 레벨)
+    # ERROR 레벨 필터 추가 (ERROR는 stderr로만 출력)
+    stdout_handler.addFilter(lambda record: record.levelno < logging.ERROR)
+
+    # stderr 핸들러 (ERROR 레벨만)
     stderr_handler = logging.StreamHandler(sys.stderr)
     stderr_handler.setLevel(logging.ERROR)
     stderr_handler.setFormatter(formatter)
